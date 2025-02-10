@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8">
+        <h2 class="text-2xl font-bold mb-6 flex items-center text-gray-800 dark:text-gray-100">
+            <i class="fas fa-upload mr-3 text-{{ config.theme.primary_color }}-500"></i>
+            Upload Configuration
+        </h2>
+        
+        <!-- Template Download Section -->
+        <div class="mb-8 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded-lg">
+            <div class="flex items-start space-x-3">
+                <i class="fas fa-info-circle text-blue-500 mt-1"></i>
+                <div class="flex-1">
+                    <p class="text-sm text-blue-700 dark:text-blue-200 mb-3">
+                        Not sure about the format? Download our template file to see the correct JSON structure for your configuration.
+                    </p>
+                    <a href="{{ url_for('download_config') }}" 
+                       class="inline-flex items-center space-x-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-800 text-sm text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-lg transition-colors">
+                        <i class="fas fa-download"></i>
+                        <span>Download Template</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example Structure Section -->
+        <div class="mb-8 p-4 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-200">
+                Expected Structure:
+            </h3>
+            <pre class="text-sm bg-white dark:bg-gray-800 p-4 rounded-lg overflow-x-auto text-gray-600 dark:text-gray-300"><code>{
+  "title": "Dashboard Name",
+  "theme": {
+    "primary_color": "blue",
+    "layout": "grid",
+    "container_spacing": "less"
+  },
+  "categories": ["Category1", "Category2"],
+  "links": [
+    {
+      "title": "Link Title",
+      "url": "https://example.com",
+      "description": "Optional description",
+      "category": "Category1",
+    }
+  ]
+}</code></pre>
+        </div>
+        
+        <!-- Upload Form -->
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="config_file">
+                    Upload Configuration File (JSON)
+                </label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg hover:border-{{ config.theme.primary_color }}-500 transition-colors">
+                    <div class="space-y-1 text-center">
+                        <i class="fas fa-file-upload text-gray-400 dark:text-gray-500 text-3xl mb-3"></i>
+                        <div class="flex text-sm text-gray-600 dark:text-gray-400">
+                            <label for="config_file" class="relative cursor-pointer rounded-md font-medium text-{{ config.theme.primary_color }}-500 hover:text-{{ config.theme.primary_color }}-600">
+                                <span>Upload a file</span>
+                                <input id="config_file" name="config_file" type="file" accept=".json" class="sr-only">
+                            </label>
+                            <p class="pl-1">or drag and drop</p>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">JSON up to 16MB</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-end space-x-4 pt-4">
+                <a href="{{ url_for('dashboard') }}"
+                   class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="bg-{{ config.theme.primary_color }}-500 hover:bg-{{ config.theme.primary_color }}-600 text-white px-6 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-{{ config.theme.primary_color }}-500">
+                    Upload Configuration
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Drag and drop functionality
+    const dropZone = document.querySelector('form');
+    const fileInput = document.getElementById('config_file');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.classList.add('border-{{ config.theme.primary_color }}-500');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('border-{{ config.theme.primary_color }}-500');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+    }
+</script>
+{% endblock %}
