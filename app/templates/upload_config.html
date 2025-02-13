@@ -15,7 +15,8 @@
                     <p class="text-sm text-blue-700 dark:text-blue-200 mb-3">
                         Not sure about the format? Download our template file to see the correct JSON structure for your configuration.
                     </p>
-                    <a href="{{ url_for('download_config') }}" 
+                    <!-- Updated endpoint -->
+                    <a href="{{ url_for('main.download_config') }}" 
                        class="inline-flex items-center space-x-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-800 text-sm text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-lg transition-colors">
                         <i class="fas fa-download"></i>
                         <span>Download Template</span>
@@ -42,7 +43,7 @@
       "title": "Link Title",
       "url": "https://example.com",
       "description": "Optional description",
-      "category": "Category1",
+      "category": "Category1"
     }
   ]
 }</code></pre>
@@ -71,7 +72,8 @@
             
             <!-- Action Buttons -->
             <div class="flex items-center justify-end space-x-4 pt-4">
-                <a href="{{ url_for('dashboard') }}"
+                <!-- Updated endpoint -->
+                <a href="{{ url_for('main.dashboard') }}"
                    class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                     Cancel
                 </a>
@@ -85,7 +87,7 @@
 </div>
 
 <script>
-    // Drag and drop functionality
+    // Drag and drop functionality remains the same
     const dropZone = document.querySelector('form');
     const fileInput = document.getElementById('config_file');
 

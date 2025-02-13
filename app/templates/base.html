@@ -201,7 +201,7 @@
       <div class="flex justify-between items-center">
         <!-- Left side with title and greeting -->
         <div class="flex items-center space-x-6">
-          <a href="{{ url_for('dashboard') }}" class="text-2xl font-bold text-white flex items-center space-x-2">
+          <a href="{{ url_for('main.dashboard') }}" class="text-2xl font-bold text-white flex items-center space-x-2">
             <i class="fas fa-th-large"></i>
             <span>{{ config.title }}</span>
           </a>
@@ -212,11 +212,11 @@
 
         <!-- Right side with buttons -->
         <div class="flex items-center space-x-6">
-          <a href="{{ url_for('add_link') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+          <a href="{{ url_for('main.add_link') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
             <i class="fas fa-plus"></i>
             <span>Add Link</span>
           </a>
-          <a href="{{ url_for('upload_config') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+          <a href="{{ url_for('main.upload_config') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
             <i class="fas fa-upload"></i>
             <span>Config</span>
           </a>
@@ -228,7 +228,7 @@
               <i class="fas fa-cog pointer-events-none"></i>
             </button>
             <div id="settings-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-100 dark:border-gray-700 z-50">
-              <form method="POST" action="{{ url_for('update_settings') }}" class="p-4">
+              <form method="POST" action="{{ url_for('main.update_settings') }}" class="p-4">
                 <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">Dashboard Settings</h3>
                 <div class="space-y-4">
                   <div>
@@ -267,12 +267,12 @@
           </div>
 
           {% if current_user.is_authenticated %}
-            <a href="{{ url_for('logout') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+            <a href="{{ url_for('auth.logout') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
               <i class="fas fa-sign-out-alt"></i>
               <span>Logout</span>
             </a>
           {% else %}
-            <a href="{{ url_for('login') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+            <a href="{{ url_for('auth.login') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
               <i class="fas fa-sign-in-alt"></i>
               <span>Login</span>
             </a>
@@ -286,7 +286,7 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="flash-message {{ 'flash-error' if category == 'error' }} p-4 rounded-lg mb-6 flex items-center space-x-3">
+          <div class="flash-message {{ 'flash-error' if category == 'error' else '' }} p-4 rounded-lg mb-6 flex items-center space-x-3">
             <i class="fas {{ 'fa-check-circle' if category != 'error' else 'fa-exclamation-circle' }}"></i>
             <span>{{ message }}</span>
           </div>
@@ -298,44 +298,43 @@
 
   <script>
     function toggleSettingsDropdown(event) {
-        event.stopPropagation();
-        const dropdown = document.getElementById('settings-dropdown');
-        dropdown.classList.toggle('hidden');
+      event.stopPropagation();
+      const dropdown = document.getElementById('settings-dropdown');
+      dropdown.classList.toggle('hidden');
     }
 
     // Close dropdown when clicking outside
     document.addEventListener('click', function(event) {
-        const dropdown = document.getElementById('settings-dropdown');
-        const button = event.target.closest('.nav-button');
-        
-        if (!button && !dropdown.contains(event.target)) {
-            dropdown.classList.add('hidden');
-        }
+      const dropdown = document.getElementById('settings-dropdown');
+      const button = event.target.closest('.nav-button');
+      if (!button && !dropdown.contains(event.target)) {
+        dropdown.classList.add('hidden');
+      }
     });
 
     // Dark mode functionality
     function toggleDarkMode() {
-        const html = document.documentElement;
-        const isDark = html.classList.toggle('dark');
-        localStorage.setItem('darkMode', isDark ? 'dark' : 'light');
-        
-        // Update toggle appearance
-        const toggle = document.getElementById('dark_mode_toggle');
-        toggle.classList.toggle('bg-blue-600');
-        toggle.classList.toggle('bg-gray-200');
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      localStorage.setItem('darkMode', isDark ? 'dark' : 'light');
+      
+      // Update toggle appearance
+      const toggle = document.getElementById('dark_mode_toggle');
+      toggle.classList.toggle('bg-blue-600');
+      toggle.classList.toggle('bg-gray-200');
     }
 
     // Initialize dark mode from localStorage
     function initializeDarkMode() {
-        const darkMode = localStorage.getItem('darkMode');
-        if (darkMode === 'dark') {
-            document.documentElement.classList.add('dark');
-            const toggle = document.getElementById('dark_mode_toggle');
-            if (toggle) {
-                toggle.classList.remove('bg-gray-200');
-                toggle.classList.add('bg-blue-600');
-            }
+      const darkMode = localStorage.getItem('darkMode');
+      if (darkMode === 'dark') {
+        document.documentElement.classList.add('dark');
+        const toggle = document.getElementById('dark_mode_toggle');
+        if (toggle) {
+          toggle.classList.remove('bg-gray-200');
+          toggle.classList.add('bg-blue-600');
         }
+      }
     }
 
     // Initialize dark mode on page load
@@ -343,12 +342,12 @@
 
     // Optional: Add OS-level dark mode detection
     if (window.matchMedia) {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        mediaQuery.addListener((e) => {
-            if (!localStorage.getItem('darkMode')) {
-                document.documentElement.classList.toggle('dark', e.matches);
-            }
-        });
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      mediaQuery.addListener((e) => {
+        if (!localStorage.getItem('darkMode')) {
+          document.documentElement.classList.toggle('dark', e.matches);
+        }
+      });
     }
   </script>
 </body>
