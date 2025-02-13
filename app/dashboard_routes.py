@@ -1,0 +1,193 @@
+from flask import Blueprint, render_template, redirect, url_for, request, flash, send_file
+from flask_login import login_required
+import json
+import uuid
+from io import BytesIO
+from app.config_utils import allowed_file, load_config, save_config, validate_config
+
+main_bp = Blueprint('main', __name__)
+
+@main_bp.route('/')
+@login_required
+def dashboard():
+    config = load_config()
+    return render_template('dashboard.html', config=config)
+
+@main_bp.route('/upload_config', methods=['GET', 'POST'])
+@login_required
+def upload_config():
+    if request.method == 'POST':
+        if 'config_file' not in request.files:
+            flash('No file selected')
+            return redirect(request.url)
+        
+        file = request.files['config_file']
+        if file.filename == '':
+            flash('No file selected')
+            return redirect(request.url)
+        
+        if file and allowed_file(file.filename):
+            try:
+                config = json.load(file)
+                if validate_config(config):
+                    save_config(config)
+                    flash('Configuration uploaded successfully!')
+                    return redirect(url_for('main.dashboard'))
+                else:
+                    flash('Invalid configuration format')
+            except json.JSONDecodeError:
+                flash('Invalid JSON file')
+        else:
+            flash('Invalid file type. Please upload a JSON file.')
+        
+        return redirect(request.url)
+    
+    return render_template('upload_config.html', config=load_config())
+
+@main_bp.route('/download_config')
+@login_required
+def download_config():
+    template_config = {
+        'title': 'My Dashboard',
+        'theme': {
+            'primary_color': 'blue',
+            'layout': 'grid',
+            'container_spacing': 'less'
+        },
+        'categories': [
+            'Work',
+            'Personal',
+            'Development',
+            'Social Media'
+        ],
+        'links': [
+            {
+                'id': 'example-1',
+                'title': 'Example Work Link',
+                'url': 'https://example.com/work',
+                'description': 'This is an example work-related link',
+                'category': 'Work'
+            },
+            {
+                'id': 'example-2',
+                'title': 'Example Personal Link',
+                'url': 'https://example.com/personal',
+                'description': 'This is an example personal link',
+                'category': 'Personal'
+            }
+        ]
+    }
+    
+    json_str = json.dumps(template_config, indent=2)
+    buffer = BytesIO(json_str.encode('utf-8'))
+    
+    return send_file(
+        buffer,
+        mimetype='application/json',
+        as_attachment=True,
+        download_name='dashboard_template.json'
+    )
+
+@main_bp.route('/add', methods=['GET', 'POST'])
+@login_required
+def add_link():
+    if request.method == 'POST':
+        config = load_config()
+        
+        url = request.form.get('url')
+        if not (url.startswith('http://') or url.startswith('https://')):
+            url = 'https://' + url
+
+        new_link = {
+            'id': str(uuid.uuid4()),
+            'title': request.form.get('title'),
+            'url': url,
+            'description': request.form.get('description', ''),
+            'category': request.form.get('category', ''),
+            'icon': request.form.get('icon', '')
+        }
+        
+        config['links'].append(new_link)
+        save_config(config)
+        return redirect(url_for('main.dashboard'))
+    
+    return render_template('add_link.html', config=load_config())
+
+@main_bp.route('/edit/<link_id>', methods=['GET', 'POST'])
+@login_required
+def edit_link(link_id):
+    config = load_config()
+    link = next((l for l in config['links'] if l['id'] == link_id), None)
+    if not link:
+        flash("Link not found")
+        return redirect(url_for('main.dashboard'))
+    if request.method == 'POST':
+        url = request.form.get('url')
+        if not (url.startswith('http://') or url.startswith('https://')):
+            url = 'https://' + url
+        link['title'] = request.form.get('title')
+        link['url'] = url
+        link['description'] = request.form.get('description', '')
+        link['category'] = request.form.get('category', '')
+        link['icon'] = request.form.get('icon', '')
+        save_config(config)
+        return redirect(url_for('main.dashboard'))
+    return render_template('edit_link.html', config=load_config(), link=link)
+
+@main_bp.route('/delete/<link_id>')
+@login_required
+def delete_link(link_id):
+    config = load_config()
+    config['links'] = [l for l in config['links'] if l['id'] != link_id]
+    save_config(config)
+    return redirect(url_for('main.dashboard'))
+
+@main_bp.route('/update_order', methods=['POST'])
+@login_required
+def update_order():
+    data = request.get_json()
+    category = data.get('category')
+    new_order = data.get('order')  # list of link IDs
+
+    config = load_config()
+    links = config.get('links', [])
+
+    if category == "uncategorized":
+        group_links = [l for l in links if not l.get('category')]
+    else:
+        group_links = [l for l in links if l.get('category') == category]
+
+    link_dict = {l['id']: l for l in group_links}
+    new_group = []
+    for link_id in new_order:
+        if link_id in link_dict:
+            new_group.append(link_dict[link_id])
+    
+    new_links = []
+    for l in links:
+        if category == "uncategorized":
+            if not l.get('category'):
+                new_links.append(new_group.pop(0))
+            else:
+                new_links.append(l)
+        else:
+            if l.get('category') == category:
+                new_links.append(new_group.pop(0))
+            else:
+                new_links.append(l)
+    
+    config['links'] = new_links
+    save_config(config)
+    return {"status": "ok"}
+
+@main_bp.route('/update_settings', methods=['POST'])
+@login_required
+def update_settings():
+    config = load_config()
+    container_spacing = request.form.get('container_spacing', 'less')
+    if 'theme' not in config:
+        config['theme'] = {}
+    config['theme']['container_spacing'] = container_spacing
+    save_config(config)
+    flash('Settings updated!')
+    return redirect(url_for('main.dashboard'))
