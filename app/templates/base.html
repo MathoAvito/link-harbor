@@ -199,12 +199,20 @@
   <nav class="mb-8">
     <div class="container mx-auto px-4 py-4">
       <div class="flex justify-between items-center">
-        <!-- Left side with title and greeting -->
+        <!-- Left side with title -->
         <div class="flex items-center space-x-6">
-          <a href="{{ url_for('main.dashboard') }}" class="text-2xl font-bold text-white flex items-center space-x-2">
-            <i class="fas fa-th-large"></i>
-            <span>{{ config.title }}</span>
-          </a>
+          {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.dashboard') }}" class="text-2xl font-bold text-white flex items-center space-x-2">
+          {% else %}
+            <span class="text-2xl font-bold text-white flex items-center space-x-2">
+          {% endif %}
+              <i class="fas fa-th-large"></i>
+              <span>{{ config.title }}</span>
+          {% if current_user.is_authenticated %}
+            </a>
+          {% else %}
+            </span>
+          {% endif %}
           {% if current_user.is_authenticated %}
             <span class="text-white opacity-90">Hello, {{ current_user.username }}!</span>
           {% endif %}
@@ -212,69 +220,66 @@
 
         <!-- Right side with buttons -->
         <div class="flex items-center space-x-6">
-          <a href="{{ url_for('main.add_link') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
-            <i class="fas fa-plus"></i>
-            <span>Add Link</span>
-          </a>
-          <a href="{{ url_for('main.upload_config') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
-            <i class="fas fa-upload"></i>
-            <span>Config</span>
-          </a>
-          
-          <!-- Settings Button -->
-          <div class="relative">
-            <button class="nav-button text-white p-2 rounded-lg flex items-center justify-center w-10 h-10 cursor-pointer"
-                    onclick="toggleSettingsDropdown(event)">
-              <i class="fas fa-cog pointer-events-none"></i>
-            </button>
-            <div id="settings-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-100 dark:border-gray-700 z-50">
-              <form method="POST" action="{{ url_for('main.update_settings') }}" class="p-4">
-                <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">Dashboard Settings</h3>
-                <div class="space-y-4">
-                  <div>
-                    <label for="container_spacing" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Container Spacing
-                    </label>
-                    <select id="container_spacing" name="container_spacing" 
-                            class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                      <option value="less" {% if config.theme.container_spacing == 'less' %}selected{% endif %}>Compact</option>
-                      <option value="more" {% if config.theme.container_spacing == 'more' %}selected{% endif %}>Spacious</option>
-                    </select>
-                  </div>
-                  
-                  <!-- Dark Mode Toggle -->
-                  <div class="flex items-center justify-between">
-                    <label for="dark_mode" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Dark Mode
-                    </label>
-                    <button type="button" 
-                            id="dark_mode_toggle"
-                            onclick="toggleDarkMode()"
-                            class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none bg-gray-200 dark:bg-blue-600">
-                      <span class="sr-only">Toggle dark mode</span>
-                      <span id="dark_mode_toggle_handle" 
-                            class="inline-block w-4 h-4 transform transition-transform bg-white rounded-full translate-x-1 dark:translate-x-6"></span>
+          {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.upload_config') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+              <i class="fas fa-upload"></i>
+              <span>Config</span>
+            </a>
+            
+            <!-- Add the new Import Bookmarks button here -->
+            <a href="{{ url_for('main.upload_bookmarks') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+              <i class="fas fa-bookmark"></i>
+              <span>Import Bookmarks</span>
+            </a>
+            
+            <!-- Settings Button -->
+            <div class="relative">
+              <button class="nav-button text-white p-2 rounded-lg flex items-center justify-center w-10 h-10 cursor-pointer"
+                      onclick="toggleSettingsDropdown(event)">
+                <i class="fas fa-cog pointer-events-none"></i>
+              </button>
+              <div id="settings-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-100 dark:border-gray-700 z-50">
+                <form method="POST" action="{{ url_for('main.update_settings') }}" class="p-4">
+                  <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">Dashboard Settings</h3>
+                  <div class="space-y-4">
+                    <div>
+                      <label for="container_spacing" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Container Spacing
+                      </label>
+                      <select id="container_spacing" name="container_spacing" 
+                              class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="less" {% if config.theme.container_spacing == 'less' %}selected{% endif %}>Compact</option>
+                        <option value="more" {% if config.theme.container_spacing == 'more' %}selected{% endif %}>Spacious</option>
+                      </select>
+                    </div>
+                    
+                    <!-- Dark Mode Toggle -->
+                    <div class="flex items-center justify-between">
+                      <label for="dark_mode" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Dark Mode
+                      </label>
+                      <button type="button" 
+                              id="dark_mode_toggle"
+                              onclick="toggleDarkMode()"
+                              class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none bg-gray-200 dark:bg-blue-600">
+                        <span class="sr-only">Toggle dark mode</span>
+                        <span id="dark_mode_toggle_handle" 
+                              class="inline-block w-4 h-4 transform transition-transform bg-white rounded-full translate-x-1 dark:translate-x-6"></span>
+                      </button>
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 transition">
+                      Save Changes
                     </button>
                   </div>
-
-                  <button type="submit" 
-                          class="w-full bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 transition">
-                    Save Changes
-                  </button>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
-          </div>
 
-          {% if current_user.is_authenticated %}
             <a href="{{ url_for('auth.logout') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
               <i class="fas fa-sign-out-alt"></i>
               <span>Logout</span>
-            </a>
-          {% else %}
-            <a href="{{ url_for('auth.login') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
-              <i class="fas fa-sign-in-alt"></i>
-              <span>Login</span>
             </a>
           {% endif %}
         </div>

@@ -3,7 +3,7 @@ from flask_login import login_required
 import json
 import uuid
 from io import BytesIO
-from app.config_utils import allowed_file, load_config, save_config, validate_config
+from app.config_utils import (allowed_file, load_config, save_config, validate_config, parse_chrome_bookmarks, merge_bookmarks_with_config)
 
 main_bp = Blueprint('main', __name__)
 
@@ -43,6 +43,59 @@ def upload_config():
         return redirect(request.url)
     
     return render_template('upload_config.html', config=load_config())
+
+@main_bp.route('/upload_bookmarks', methods=['GET', 'POST'])
+@login_required
+def upload_bookmarks():
+    if request.method == 'POST':
+        print("POST request received") # Debug print
+        if 'bookmark_file' not in request.files:
+            print("No bookmark_file in request") # Debug print
+            flash('No file selected')
+            return redirect(request.url)
+        
+        file = request.files['bookmark_file']
+        if file.filename == '':
+            print("Empty filename") # Debug print
+            flash('No file selected')
+            return redirect(request.url)
+        
+        if file and file.filename.endswith('.html'):
+            try:
+                # Read the HTML content
+                bookmark_content = file.read().decode('utf-8')
+                print(f"File content length: {len(bookmark_content)}") # Debug print
+                
+                # Parse bookmarks
+                new_bookmarks = parse_chrome_bookmarks(bookmark_content)
+                print(f"Found {len(new_bookmarks)} bookmarks") # Debug print
+                
+                # Load current config
+                config = load_config()
+                
+                # Merge bookmarks with existing config
+                old_count = len(config['links'])
+                config = merge_bookmarks_with_config(config, new_bookmarks)
+                new_count = len(config['links'])
+                print(f"Added {new_count - old_count} new bookmarks") # Debug print
+                
+                # Save updated config
+                save_config(config)
+                
+                flash(f'Successfully imported {len(new_bookmarks)} bookmarks!')
+                return redirect(url_for('main.dashboard'))
+                
+            except Exception as e:
+                print(f"Error occurred: {str(e)}") # Debug print
+                flash(f'Error processing bookmarks: {str(e)}')
+                return redirect(request.url)
+        else:
+            print(f"Invalid file type: {file.filename}") # Debug print
+            flash('Invalid file type. Please upload a Chrome bookmarks HTML file.')
+        
+        return redirect(request.url)
+    
+    return render_template('upload_bookmarks.html', config=load_config())
 
 @main_bp.route('/download_config')
 @login_required
