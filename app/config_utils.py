@@ -14,43 +14,54 @@ def parse_chrome_bookmarks(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
     links = []
     
-    def extract_folder_name(dt_tag):
-        h3_tag = dt_tag.find('h3')
-        if h3_tag:
-            return h3_tag.text
-        return None
-
+    print("Starting to parse bookmarks") # Debug print
+    
     def process_bookmark(a_tag, category=None):
-        icon_data = a_tag.get('ICON', '')  # Get icon data if it exists
-        return {
+        bookmark = {
             'id': str(uuid.uuid4()),
             'title': a_tag.text.strip(),
             'url': a_tag.get('href', ''),
-            'icon': icon_data if icon_data else '',  # Store icon data if available
+            'icon': a_tag.get('ICON', ''),
             'category': category,
-            'description': ''  # Default empty description
+            'description': ''
         }
+        print(f"Found bookmark: {bookmark['title']} - {bookmark['url']}") # Debug print
+        return bookmark
 
-    def process_dl(dl_tag, current_category=None):
-        for dt in dl_tag.find_all('dt', recursive=False):
-            # Check if it's a folder
+    def process_folder(dl_tag, current_category=None):
+        print(f"Processing folder: {current_category}") # Debug print
+        for dt in dl_tag.find_all('dt'):
             h3 = dt.find('h3')
             if h3:
-                folder_name = h3.text
-                dl = dt.find('dl')
-                if dl:
-                    process_dl(dl, folder_name)
+                # Found a folder
+                folder_name = h3.text.strip()
+                print(f"Found folder: {folder_name}") # Debug print
+                # Find the next DL after this H3
+                next_dl = dt.find('dl')
+                if next_dl:
+                    process_folder(next_dl, folder_name)
             else:
                 # It's a bookmark
                 a_tag = dt.find('a')
-                if a_tag:
+                if a_tag and a_tag.get('href'):  # Make sure it has a URL
                     links.append(process_bookmark(a_tag, current_category))
 
-    # Start processing from the root
-    root_dl = soup.find('dl')
-    if root_dl:
-        process_dl(root_dl)
+    # Find the Bookmarks Bar folder specifically
+    bookmarks_bar = soup.find('h3', text='Bookmarks bar')
+    if bookmarks_bar:
+        print("Found Bookmarks bar") # Debug print
+        # Get the parent DL that contains all bookmarks
+        bookmarks_container = bookmarks_bar.find_parent('dt').find_parent('dl')
+        if bookmarks_container:
+            process_folder(bookmarks_container)
+    else:
+        print("No Bookmarks bar found, trying root DL") # Debug print
+        # Fallback to processing the entire file
+        root_dl = soup.find('dl')
+        if root_dl:
+            process_folder(root_dl)
 
+    print(f"Total bookmarks found: {len(links)}") # Debug print
     return links
 
 def merge_bookmarks_with_config(config, new_bookmarks):

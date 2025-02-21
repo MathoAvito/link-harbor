@@ -48,12 +48,15 @@ def upload_config():
 @login_required
 def upload_bookmarks():
     if request.method == 'POST':
+        print("POST request received") # Debug print
         if 'bookmark_file' not in request.files:
+            print("No bookmark_file in request") # Debug print
             flash('No file selected')
             return redirect(request.url)
         
         file = request.files['bookmark_file']
         if file.filename == '':
+            print("Empty filename") # Debug print
             flash('No file selected')
             return redirect(request.url)
         
@@ -61,15 +64,20 @@ def upload_bookmarks():
             try:
                 # Read the HTML content
                 bookmark_content = file.read().decode('utf-8')
+                print(f"File content length: {len(bookmark_content)}") # Debug print
                 
                 # Parse bookmarks
                 new_bookmarks = parse_chrome_bookmarks(bookmark_content)
+                print(f"Found {len(new_bookmarks)} bookmarks") # Debug print
                 
                 # Load current config
                 config = load_config()
                 
                 # Merge bookmarks with existing config
+                old_count = len(config['links'])
                 config = merge_bookmarks_with_config(config, new_bookmarks)
+                new_count = len(config['links'])
+                print(f"Added {new_count - old_count} new bookmarks") # Debug print
                 
                 # Save updated config
                 save_config(config)
@@ -78,9 +86,11 @@ def upload_bookmarks():
                 return redirect(url_for('main.dashboard'))
                 
             except Exception as e:
+                print(f"Error occurred: {str(e)}") # Debug print
                 flash(f'Error processing bookmarks: {str(e)}')
                 return redirect(request.url)
         else:
+            print(f"Invalid file type: {file.filename}") # Debug print
             flash('Invalid file type. Please upload a Chrome bookmarks HTML file.')
         
         return redirect(request.url)
