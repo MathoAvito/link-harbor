@@ -14,6 +14,13 @@
 {% endfor %}
 
 <div class="space-y-8">
+    <div class="mb-6">
+        <button id="toggleAllCategories" 
+                class="bg-{{ config.theme.primary_color }}-500 hover:bg-{{ config.theme.primary_color }}-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+            <i class="fas fa-chevron-up" id="toggleAllIcon"></i>
+            <span id="toggleAllText">Collapse All</span>
+        </button>
+    </div>  
   {# Render each category group #}
   {% for category in computed_categories %}
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
@@ -268,6 +275,86 @@
 <!-- Include SortableJS -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
+
+let allExpanded = true;  // Track the current state
+
+function collapseCategory(categoryId) {
+    const content = document.getElementById(`category-content-${categoryId}`);
+    const icon = document.getElementById(`icon-${categoryId}`);
+    const wrapper = content.firstElementChild;
+    
+    content.style.height = wrapper.offsetHeight + 'px';
+    window.getComputedStyle(content).height;
+    content.style.height = '0px';
+    icon.style.transform = 'rotate(180deg)';
+    localStorage.setItem(`category-${categoryId}`, 'collapsed');
+}
+
+function expandCategory(categoryId) {
+    const content = document.getElementById(`category-content-${categoryId}`);
+    const icon = document.getElementById(`icon-${categoryId}`);
+    const wrapper = content.firstElementChild;
+    
+    content.style.height = wrapper.offsetHeight + 'px';
+    icon.style.transform = 'rotate(0deg)';
+    localStorage.setItem(`category-${categoryId}`, 'expanded');
+}
+
+function toggleAllCategories() {
+    const toggleButton = document.getElementById('toggleAllCategories');
+    const toggleIcon = document.getElementById('toggleAllIcon');
+    const toggleText = document.getElementById('toggleAllText');
+    
+    // Get all category IDs
+    const categories = document.querySelectorAll('[id^="category-content-"]');
+    
+    categories.forEach(category => {
+        const categoryId = category.id.replace('category-content-', '');
+        if (allExpanded) {
+            collapseCategory(categoryId);
+        } else {
+            expandCategory(categoryId);
+        }
+    });
+    
+    // Update button state
+    allExpanded = !allExpanded;
+    toggleIcon.style.transform = allExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+    toggleText.textContent = allExpanded ? 'Collapse All' : 'Expand All';
+}
+
+// Add event listener for the toggle all button
+document.getElementById('toggleAllCategories').addEventListener('click', toggleAllCategories);
+
+// Update the existing initializeCategoryStates function
+function initializeCategoryStates() {
+    const categories = document.querySelectorAll('[id^="category-content-"]');
+    let allCollapsed = true;
+    
+    categories.forEach(category => {
+        const categoryId = category.id.replace('category-content-', '');
+        const savedState = localStorage.getItem('category-' + categoryId);
+        const icon = document.getElementById('icon-' + categoryId);
+        const wrapper = category.firstElementChild;
+        
+        if (savedState === 'collapsed') {
+            category.style.height = '0px';
+            icon.style.transform = 'rotate(180deg)';
+        } else {
+            category.style.height = wrapper.offsetHeight + 'px';
+            icon.style.transform = 'rotate(0deg)';
+            allCollapsed = false;
+        }
+    });
+    
+    // Update toggle all button state based on current state
+    allExpanded = !allCollapsed;
+    const toggleIcon = document.getElementById('toggleAllIcon');
+    const toggleText = document.getElementById('toggleAllText');
+    toggleIcon.style.transform = allExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+    toggleText.textContent = allExpanded ? 'Collapse All' : 'Expand All';
+}
+
 // Improved dropdown functionality
 function toggleDropdown(linkId) {
     const dropdown = document.getElementById('dropdown-' + linkId);
@@ -396,6 +483,20 @@ function toggleCategory(categoryId) {
         icon.style.transform = 'rotate(180deg)';
         localStorage.setItem('category-' + categoryId, 'collapsed');
     }
+    
+    // Check all categories' state and update the toggle all button accordingly
+    const categories = document.querySelectorAll('[id^="category-content-"]');
+    let allCollapsed = true;
+    categories.forEach(category => {
+        if (category.style.height !== '0px') {
+            allCollapsed = false;
+        }
+    });
+    allExpanded = !allCollapsed;
+    const toggleIcon = document.getElementById('toggleAllIcon');
+    const toggleText = document.getElementById('toggleAllText');
+    toggleIcon.style.transform = allExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+    toggleText.textContent = allExpanded ? 'Collapse All' : 'Expand All';
 }
 
 // Initialize category states
