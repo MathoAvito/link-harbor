@@ -3,7 +3,7 @@ from flask_login import login_required
 import json
 import uuid
 from io import BytesIO
-from app.config_utils import allowed_file, load_config, save_config, validate_config
+from app.config_utils import (allowed_file, load_config, save_config, validate_config, parse_chrome_bookmarks, merge_bookmarks_with_config)
 
 main_bp = Blueprint('main', __name__)
 
@@ -43,6 +43,49 @@ def upload_config():
         return redirect(request.url)
     
     return render_template('upload_config.html', config=load_config())
+
+@main_bp.route('/upload_bookmarks', methods=['GET', 'POST'])
+@login_required
+def upload_bookmarks():
+    if request.method == 'POST':
+        if 'bookmark_file' not in request.files:
+            flash('No file selected')
+            return redirect(request.url)
+        
+        file = request.files['bookmark_file']
+        if file.filename == '':
+            flash('No file selected')
+            return redirect(request.url)
+        
+        if file and file.filename.endswith('.html'):
+            try:
+                # Read the HTML content
+                bookmark_content = file.read().decode('utf-8')
+                
+                # Parse bookmarks
+                new_bookmarks = parse_chrome_bookmarks(bookmark_content)
+                
+                # Load current config
+                config = load_config()
+                
+                # Merge bookmarks with existing config
+                config = merge_bookmarks_with_config(config, new_bookmarks)
+                
+                # Save updated config
+                save_config(config)
+                
+                flash(f'Successfully imported {len(new_bookmarks)} bookmarks!')
+                return redirect(url_for('main.dashboard'))
+                
+            except Exception as e:
+                flash(f'Error processing bookmarks: {str(e)}')
+                return redirect(request.url)
+        else:
+            flash('Invalid file type. Please upload a Chrome bookmarks HTML file.')
+        
+        return redirect(request.url)
+    
+    return render_template('upload_bookmarks.html', config=load_config())
 
 @main_bp.route('/download_config')
 @login_required
