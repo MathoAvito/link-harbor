@@ -13,20 +13,22 @@
   {% endif %}
 {% endfor %}
 
-<div class="space-y-8">
-    <div class="mb-6">
-        <button id="toggleAllCategories" 
-                class="bg-{{ config.theme.primary_color }}-500 hover:bg-{{ config.theme.primary_color }}-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
-            <i class="fas fa-chevron-up" id="toggleAllIcon"></i>
-            <span id="toggleAllText">Collapse All</span>
-        </button>
-    </div>  
+<div class="{% if config.theme.container_spacing == 'less' %}space-y-4{% else %}space-y-8{% endif %}">
+  <!-- Toggle All Button -->
+  <div class="mb-6">
+      <button id="toggleAllCategories" 
+              class="bg-{{ config.theme.primary_color }}-500 hover:bg-{{ config.theme.primary_color }}-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+          <i class="fas fa-chevron-up" id="toggleAllIcon"></i>
+          <span id="toggleAllText">Collapse All</span>
+      </button>
+  </div>
+
   {# Render each category group #}
   {% for category in computed_categories %}
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold flex items-center text-gray-800 dark:text-gray-100">
-          <i class="fas fa-folder mr-3 text-{{ config.theme.primary_color }}-500"></i>
+      <div class="flex justify-between items-center {% if config.theme.container_spacing == 'less' %}mb-3{% else %}mb-6{% endif %}">
+        <h2 class="{% if config.theme.container_spacing == 'less' %}text-xl{% else %}text-2xl{% endif %} font-bold flex items-center text-gray-800 dark:text-gray-100">
+          <i class="fas fa-folder {% if config.theme.container_spacing == 'less' %}mr-2{% else %}mr-3{% endif %} text-{{ config.theme.primary_color }}-500"></i>
           {{ category }}
         </h2>
         <button onclick="toggleCategory('{{ category|replace(' ', '-') }}')" 
@@ -39,20 +41,20 @@
            class="transition-all duration-300"
            style="height: auto; overflow: hidden;">
         <div id="sortable-{{ category|replace(' ', '-') }}" 
-             class="sortable-group grid gap-3
+             class="sortable-group grid
                     {% if config.theme.container_spacing == 'less' %}
-                    grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5
+                    gap-2 grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8
                     {% else %}
-                    grid-cols-1 md:grid-cols-2 lg:grid-cols-3
+                    gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3
                     {% endif %}">
           {% for link in config.links %}
             {% if link.category == category %}
               <div class="bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600 
-                          {{ spacing_class }} hover:shadow-md transition-all duration-300 relative group
+                          hover:shadow-md transition-all duration-300 relative group
                           {% if config.theme.container_spacing == 'less' %}
-                          h-[160px]
+                          p-2 h-[100px]
                           {% else %}
-                          min-h-[12rem]
+                          {{ spacing_class }} min-h-[12rem]
                           {% endif %}"
                    data-id="{{ link.id }}">
                 <!-- Drag handle -->
@@ -61,59 +63,51 @@
                 </div>
                 
                 <!-- Content area -->
-                <div class="pl-6 h-full flex flex-col" onclick="window.open('{{ link.url }}', '_blank')">
-                    <!-- Title section -->
-                    <div class="flex items-center mb-1.5">
+                <div class="{% if config.theme.container_spacing == 'less' %}pl-4{% else %}pl-6{% endif %} h-full flex flex-col" 
+                     onclick="window.open('{{ link.url }}', '_blank')">
+                    {% if config.theme.container_spacing == 'less' %}
+                    <!-- Compact layout -->
+                    <div class="flex items-center mb-1">
                         {% if link.icon %}
-                            <i class="fas fa-{{ link.icon }} text-{{ config.theme.primary_color }}-500 
-                                     {% if config.theme.container_spacing == 'less' %}
-                                     text-base
-                                     {% else %}
-                                     text-xl
-                                     {% endif %} 
-                                     mr-2"></i>
+                        <i class="fas fa-{{ link.icon }} text-{{ config.theme.primary_color }}-500 text-sm mr-1.5"></i>
                         {% endif %}
-                        <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate
-                                   {% if config.theme.container_spacing == 'less' %}
-                                   text-sm
-                                   {% else %}
-                                   text-base
-                                   {% endif %}">
+                        <h3 class="font-medium text-gray-800 dark:text-gray-100 truncate text-sm">
                             {{ link.title }}
                         </h3>
                     </div>
-                    
-                    <!-- Description -->
                     {% if link.description %}
-                        <p class="text-gray-600 dark:text-gray-300 
-                                  {% if config.theme.container_spacing == 'less' %}
-                                  text-xs line-clamp-2 mb-1
-                                  {% else %}
-                                  text-sm mb-2
-                                  {% endif %}">
-                            {{ link.description }}
-                        </p>
+                    <p class="text-gray-600 dark:text-gray-300 text-xs line-clamp-1 mb-1">
+                        {{ link.description }}
+                    </p>
                     {% endif %}
-                    
-                    <!-- URL section -->
-                    <div class="mt-auto pt-2 border-t border-gray-100 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                    <div class="mt-auto text-gray-500 dark:text-gray-400">
                         <div class="flex items-center">
-                            <i class="fas fa-link mr-1 opacity-70 
-                                     {% if config.theme.container_spacing == 'less' %}
-                                     text-xs
-                                     {% else %}
-                                     text-sm
-                                     {% endif %}"></i>
-                            <span class="truncate 
-                                       {% if config.theme.container_spacing == 'less' %}
-                                       text-xs
-                                       {% else %}
-                                       text-sm
-                                       {% endif %}">
-                                {{ link.url }}
-                            </span>
+                            <i class="fas fa-link opacity-70 text-xs mr-1"></i>
+                            <span class="truncate text-xs">{{ link.url }}</span>
                         </div>
                     </div>
+                    {% else %}
+                    <!-- Regular layout -->
+                    <div class="flex items-center mb-1.5">
+                        {% if link.icon %}
+                        <i class="fas fa-{{ link.icon }} text-{{ config.theme.primary_color }}-500 text-xl mr-2"></i>
+                        {% endif %}
+                        <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate text-base">
+                            {{ link.title }}
+                        </h3>
+                    </div>
+                    {% if link.description %}
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">
+                        {{ link.description }}
+                    </p>
+                    {% endif %}
+                    <div class="mt-auto pt-2 border-t border-gray-100 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                        <div class="flex items-center">
+                            <i class="fas fa-link mr-1 opacity-70"></i>
+                            <span class="truncate text-sm">{{ link.url }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- Options Dropdown -->
@@ -147,11 +141,11 @@
     </div>
   {% endfor %}
 
-  {# Render Uncategorized links - Same structure as above #}
+  {# Render Uncategorized links - using the same structure as above #}
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold flex items-center text-gray-800 dark:text-gray-100">
-        <i class="fas fa-layer-group mr-3 text-gray-400"></i>
+    <div class="flex justify-between items-center {% if config.theme.container_spacing == 'less' %}mb-3{% else %}mb-6{% endif %}">
+      <h2 class="{% if config.theme.container_spacing == 'less' %}text-xl{% else %}text-2xl{% endif %} font-bold flex items-center text-gray-800 dark:text-gray-100">
+        <i class="fas fa-layer-group {% if config.theme.container_spacing == 'less' %}mr-2{% else %}mr-3{% endif %} text-gray-400"></i>
         Uncategorized
       </h2>
       <button onclick="toggleCategory('uncategorized')" 
@@ -164,81 +158,73 @@
          class="transition-all duration-300"
          style="height: auto; overflow: hidden;">
       <div id="sortable-uncategorized" 
-           class="sortable-group grid gap-3
-                  {% if config.theme.container_spacing == 'less' %}
-                  grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5
-                  {% else %}
-                  grid-cols-1 md:grid-cols-2 lg:grid-cols-3
-                  {% endif %}">
+           class="sortable-group grid
+                    {% if config.theme.container_spacing == 'less' %}
+                    gap-2 grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8
+                    {% else %}
+                    gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3
+                    {% endif %}">
         {% for link in config.links %}
           {% if not link.category %}
             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600 
-                        {{ spacing_class }} hover:shadow-md transition-all duration-300 relative group
+                        hover:shadow-md transition-all duration-300 relative group
                         {% if config.theme.container_spacing == 'less' %}
-                        h-[160px]
+                        p-2 h-[100px]
                         {% else %}
-                        min-h-[12rem]
+                        {{ spacing_class }} min-h-[12rem]
                         {% endif %}"
                  data-id="{{ link.id }}">
-                <!-- Drag handle -->
+                <!-- Same content as above for each link -->
                 <div class="absolute left-2 top-2 cursor-move opacity-0 group-hover:opacity-100 transition-opacity">
                     <i class="fas fa-grip-vertical text-gray-400 dark:text-gray-500"></i>
                 </div>
                 
                 <!-- Content area -->
-                <div class="pl-6 h-full flex flex-col" onclick="window.open('{{ link.url }}', '_blank')">
-                    <!-- Title section -->
-                    <div class="flex items-center mb-1.5">
+                <div class="{% if config.theme.container_spacing == 'less' %}pl-4{% else %}pl-6{% endif %} h-full flex flex-col" 
+                     onclick="window.open('{{ link.url }}', '_blank')">
+                    {% if config.theme.container_spacing == 'less' %}
+                    <!-- Compact layout -->
+                    <div class="flex items-center mb-1">
                         {% if link.icon %}
-                            <i class="fas fa-{{ link.icon }} text-{{ config.theme.primary_color }}-500 
-                                     {% if config.theme.container_spacing == 'less' %}
-                                     text-base
-                                     {% else %}
-                                     text-xl
-                                     {% endif %} 
-                                     mr-2"></i>
+                        <i class="fas fa-{{ link.icon }} text-{{ config.theme.primary_color }}-500 text-sm mr-1.5"></i>
                         {% endif %}
-                        <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate
-                                   {% if config.theme.container_spacing == 'less' %}
-                                   text-sm
-                                   {% else %}
-                                   text-base
-                                   {% endif %}">
+                        <h3 class="font-medium text-gray-800 dark:text-gray-100 truncate text-sm">
                             {{ link.title }}
                         </h3>
                     </div>
-                    
-                    <!-- Description -->
                     {% if link.description %}
-                        <p class="text-gray-600 dark:text-gray-300 
-                                  {% if config.theme.container_spacing == 'less' %}
-                                  text-xs line-clamp-2 mb-1
-                                  {% else %}
-                                  text-sm mb-2
-                                  {% endif %}">
-                            {{ link.description }}
-                        </p>
+                    <p class="text-gray-600 dark:text-gray-300 text-xs line-clamp-1 mb-1">
+                        {{ link.description }}
+                    </p>
                     {% endif %}
-                    
-                    <!-- URL section -->
-                    <div class="mt-auto pt-2 border-t border-gray-100 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                    <div class="mt-auto text-gray-500 dark:text-gray-400">
                         <div class="flex items-center">
-                            <i class="fas fa-link mr-1 opacity-70 
-                                     {% if config.theme.container_spacing == 'less' %}
-                                     text-xs
-                                     {% else %}
-                                     text-sm
-                                     {% endif %}"></i>
-                            <span class="truncate 
-                                       {% if config.theme.container_spacing == 'less' %}
-                                       text-xs
-                                       {% else %}
-                                       text-sm
-                                       {% endif %}">
-                                {{ link.url }}
-                            </span>
+                            <i class="fas fa-link opacity-70 text-xs mr-1"></i>
+                            <span class="truncate text-xs">{{ link.url }}</span>
                         </div>
                     </div>
+                    {% else %}
+                    <!-- Regular layout -->
+                    <div class="flex items-center mb-1.5">
+                        {% if link.icon %}
+                        <i class="fas fa-{{ link.icon }} text-{{ config.theme.primary_color }}-500 text-xl mr-2"></i>
+                        {% endif %}
+                        <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate text-base">
+                            {{ link.title }}
+                        </h3>
+                    </div>
+                    {% if link.description %}
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">
+                        {{ link.description }}
+                    </p>
+                    {% endif %}
+                    <div class="mt-auto pt-2 border-t border-gray-100 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                        <div class="flex items-center">
+                            <i class="fas fa-link mr-1 opacity-70"></i>
+                            <span class="truncate text-sm">{{ link.url }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- Options Dropdown -->
