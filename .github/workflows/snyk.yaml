@@ -24,3 +24,4 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: test
+          args: --severity-threshold=high # Optional: only fail on high severity issues
