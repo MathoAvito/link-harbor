@@ -1,17 +1,26 @@
+// src/services/linkService.js
 import { v4 as uuidv4 } from 'uuid';
-
-// Storage keys
-const LINKS_STORAGE_KEY = 'link_harbor_links';
+import { getCurrentUser } from './userService';
 
 /**
- * Get all links from storage
+ * Get storage key for current user
+ * @returns {string} - Storage key for current user's links
+ */
+const getUserLinksKey = () => {
+    const currentUser = getCurrentUser();
+    return currentUser ? `link_harbor_links_${currentUser.id}` : 'link_harbor_links_guest';
+};
+
+/**
+ * Get all links from storage for current user
  */
 export const getLinks = async () => {
     try {
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 300));
 
-        const linksJson = localStorage.getItem(LINKS_STORAGE_KEY);
+        const linksKey = getUserLinksKey();
+        const linksJson = localStorage.getItem(linksKey);
         return linksJson ? JSON.parse(linksJson) : [];
     } catch (error) {
         console.error('Error retrieving links from storage:', error);
@@ -38,7 +47,7 @@ export const saveLink = async (linkData) => {
 
         // Add to array and save
         const updatedLinks = [...existingLinks, newLink];
-        localStorage.setItem(LINKS_STORAGE_KEY, JSON.stringify(updatedLinks));
+        localStorage.setItem(getUserLinksKey(), JSON.stringify(updatedLinks));
 
         return newLink;
     } catch (error) {
@@ -75,7 +84,7 @@ export const updateLink = async (linkData) => {
         };
 
         // Save changes
-        localStorage.setItem(LINKS_STORAGE_KEY, JSON.stringify(updatedLinks));
+        localStorage.setItem(getUserLinksKey(), JSON.stringify(updatedLinks));
 
         return updatedLinks[linkIndex];
     } catch (error) {
@@ -96,7 +105,7 @@ export const deleteLink = async (id) => {
         const updatedLinks = existingLinks.filter(link => link.id !== id);
 
         // Save changes
-        localStorage.setItem(LINKS_STORAGE_KEY, JSON.stringify(updatedLinks));
+        localStorage.setItem(getUserLinksKey(), JSON.stringify(updatedLinks));
 
         return true;
     } catch (error) {
@@ -129,7 +138,7 @@ export const incrementClickCount = async (id) => {
         };
 
         // Save changes
-        localStorage.setItem(LINKS_STORAGE_KEY, JSON.stringify(updatedLinks));
+        localStorage.setItem(getUserLinksKey(), JSON.stringify(updatedLinks));
 
         return updatedLinks[linkIndex];
     } catch (error) {
@@ -193,7 +202,7 @@ export const importLinks = async (jsonData) => {
         const mergedLinks = [...existingLinks, ...newLinks];
 
         // Save changes
-        localStorage.setItem(LINKS_STORAGE_KEY, JSON.stringify(mergedLinks));
+        localStorage.setItem(getUserLinksKey(), JSON.stringify(mergedLinks));
 
         return {
             imported: newLinks.length,

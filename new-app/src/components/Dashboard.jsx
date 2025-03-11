@@ -128,7 +128,7 @@ const Dashboard = () => {
                     <div className="max-w-7xl mx-auto">
                         {/* Header with category name */}
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-semibold text-gray-800">
+                            <h2 className="text-2xl font-semibold text-gray-800 dark:text-white">
                                 {activeCategory === 'all'
                                     ? 'All Links'
                                     : activeCategory === 'favorites'
@@ -151,20 +151,20 @@ const Dashboard = () => {
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                             </div>
                         ) : filteredLinks.length === 0 ? (
-                            <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
-                                <h3 className="text-xl font-medium text-gray-700 mb-2">
+                                <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     {links.length === 0
                                         ? "You haven't added any links yet"
                                         : searchQuery
                                             ? "No links match your search"
                                             : `No links in ${activeCategory === 'favorites' ? 'favorites' : activeCategory}`}
                                 </h3>
-                                <p className="text-gray-500 max-w-md mx-auto mb-6">
+                                <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
                                     {links.length === 0
                                         ? "Start building your collection by adding your first link."
                                         : searchQuery

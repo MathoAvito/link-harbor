@@ -1,222 +1,198 @@
 // src/context/LinkContext.jsx
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { useUser } from './UserContext';
+import * as linkService from '../services/linkService';
 
+// Create context
 const LinkContext = createContext();
 
 export const LinkProvider = ({ children }) => {
     const [links, setLinks] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [categories, setCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { user } = useUser();
 
-    // Load links from localStorage on mount
-    useEffect(() => {
-        const loadLinks = () => {
-            setIsLoading(true);
-            try {
-                const storedLinks = localStorage.getItem('links');
-                const linksData = storedLinks ? JSON.parse(storedLinks) : [];
+    // Load links when component mounts or user changes
+    const fetchLinks = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const fetchedLinks = await linkService.getLinks();
+            setLinks(fetchedLinks);
 
-                setLinks(linksData);
+            // Extract unique categories
+            const uniqueCategories = [...new Set(fetchedLinks
+                .map(link => link.category)
+                .filter(category => category && category !== 'Uncategorized')
+            )];
+            setCategories(uniqueCategories);
 
-                // Extract unique categories
-                const uniqueCategories = [...new Set(linksData
-                    .map(link => link.category)
-                    .filter(Boolean)
-                )];
-
-                setCategories(uniqueCategories);
-            } catch (error) {
-                console.error('Error loading links:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        loadLinks();
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching links:', err);
+            setError('Failed to load links. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
-    // Save links to localStorage whenever they change
+    // Fetch links when component mounts or user changes
     useEffect(() => {
-        localStorage.setItem('links', JSON.stringify(links));
-    }, [links]);
+        fetchLinks();
+    }, [fetchLinks, user]);
 
-    // Add a new link
+    // Add new link
     const addLink = async (linkData) => {
         try {
-            // Create a new link with ID
-            const newLink = {
-                ...linkData,
-                id: uuidv4()
-            };
+            const newLink = await linkService.saveLink(linkData);
 
-            // Update state
+            // Update state with new link
             setLinks(prevLinks => [...prevLinks, newLink]);
 
             // Update categories if needed
-            if (linkData.category && !categories.includes(linkData.category)) {
-                setCategories(prev => [...prev, linkData.category]);
+            if (linkData.category && !categories.includes(linkData.category) && linkData.category !== 'Uncategorized') {
+                setCategories(prevCategories => [...prevCategories, linkData.category]);
             }
 
             return newLink;
-        } catch (error) {
-            console.error('Error adding link:', error);
-            throw error;
+        } catch (err) {
+            console.error('Error adding link:', err);
+            setError('Failed to add link. Please try again.');
+            throw err;
         }
     };
 
-    // Update a link
+    // Edit existing link
     const editLink = async (linkData) => {
-        if (!linkData.id) {
-            throw new Error('Link ID is required for updates');
-        }
-
         try {
-            // Update links state
+            const updatedLink = await linkService.updateLink(linkData);
+
+            // Update state with edited link
             setLinks(prevLinks =>
-                prevLinks.map(link => link.id === linkData.id ? { ...link, ...linkData } : link)
+                prevLinks.map(link =>
+                    link.id === linkData.id ? updatedLink : link
+                )
             );
 
             // Update categories if needed
-            if (linkData.category && !categories.includes(linkData.category)) {
-                setCategories(prev => [...prev, linkData.category]);
+            if (linkData.category && !categories.includes(linkData.category) && linkData.category !== 'Uncategorized') {
+                setCategories(prevCategories => [...prevCategories, linkData.category]);
             }
 
-            return linkData;
-        } catch (error) {
-            console.error('Error updating link:', error);
-            throw error;
+            return updatedLink;
+        } catch (err) {
+            console.error('Error editing link:', err);
+            setError('Failed to update link. Please try again.');
+            throw err;
         }
     };
 
-    // Delete a link
+    // Remove link
     const removeLink = async (id) => {
         try {
+            await linkService.deleteLink(id);
+
+            // Update state by filtering out removed link
             setLinks(prevLinks => prevLinks.filter(link => link.id !== id));
+
+            // Recalculate categories
+            const remainingLinks = links.filter(link => link.id !== id);
+            const remainingCategories = [...new Set(remainingLinks
+                .map(link => link.category)
+                .filter(category => category && category !== 'Uncategorized')
+            )];
+            setCategories(remainingCategories);
+
             return true;
-        } catch (error) {
-            console.error('Error deleting link:', error);
-            throw error;
+        } catch (err) {
+            console.error('Error removing link:', err);
+            setError('Failed to delete link. Please try again.');
+            throw err;
         }
     };
 
     // Toggle favorite status
     const toggleFavorite = async (id) => {
         try {
+            // Find the link
+            const link = links.find(link => link.id === id);
+            if (!link) throw new Error(`Link with ID ${id} not found`);
+
+            // Toggle favorite status
+            const updatedLink = {
+                ...link,
+                favorite: !link.favorite
+            };
+
+            // Update the link
+            await linkService.updateLink(updatedLink);
+
+            // Update state
             setLinks(prevLinks =>
                 prevLinks.map(link =>
                     link.id === id ? { ...link, favorite: !link.favorite } : link
                 )
             );
 
-            // Return the updated link
-            return links.find(link => link.id === id);
-        } catch (error) {
-            console.error('Error toggling favorite:', error);
-            throw error;
+            return updatedLink;
+        } catch (err) {
+            console.error('Error toggling favorite:', err);
+            setError('Failed to update favorite status. Please try again.');
+            throw err;
         }
     };
 
-    // Track link clicks
+    // Track link click
     const trackLinkClick = async (id) => {
         try {
+            // Call service to increment click count
+            const updatedLink = await linkService.incrementClickCount(id);
+
+            // Update state
             setLinks(prevLinks =>
                 prevLinks.map(link =>
-                    link.id === id ?
-                        { ...link, clicks: (link.clicks || 0) + 1, lastClicked: new Date().toISOString() } :
-                        link
+                    link.id === id ? updatedLink : link
                 )
             );
 
-            // Return the updated link
-            return links.find(link => link.id === id);
-        } catch (error) {
-            console.error('Error tracking click:', error);
-            throw error;
+            return updatedLink;
+        } catch (err) {
+            console.error('Error tracking link click:', err);
+            // Don't set user-visible error for click tracking
+            return false;
         }
     };
 
-    // Additional utility functions
-    const exportLinks = () => {
-        try {
-            const dataStr = JSON.stringify(links, null, 2);
-            const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-
-            const exportFileDefaultName = `link_harbor_export_${new Date().toISOString().slice(0, 10)}.json`;
-
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-
-            return true;
-        } catch (error) {
-            console.error('Error exporting links:', error);
-            throw error;
-        }
-    };
-
-    const importLinks = (jsonData) => {
-        try {
-            if (!Array.isArray(jsonData)) {
-                throw new Error('Invalid import data: Expected an array of links');
-            }
-
-            // Validate each link
-            const validLinks = jsonData.filter(link =>
-                link && typeof link === 'object' && link.url && link.name
-            ).map(link => ({
-                ...link,
-                id: link.id || uuidv4()
-            }));
-
-            if (validLinks.length === 0) {
-                throw new Error('No valid links found in import data');
-            }
-
-            // Merge with existing links, avoiding duplicates by URL
-            const existingUrls = new Set(links.map(link => link.url));
-            const newLinks = validLinks.filter(link => !existingUrls.has(link.url));
-
-            setLinks(prev => [...prev, ...newLinks]);
-
-            // Update categories
-            const newCategories = [...new Set(validLinks
-                .map(link => link.category)
-                .filter(Boolean)
-                .filter(cat => !categories.includes(cat))
-            )];
-
-            if (newCategories.length > 0) {
-                setCategories(prev => [...prev, ...newCategories]);
-            }
-
-            return {
-                imported: newLinks.length,
-                total: links.length + newLinks.length
-            };
-        } catch (error) {
-            console.error('Error importing links:', error);
-            throw error;
-        }
+    // Context value
+    const value = {
+        links,
+        categories,
+        isLoading,
+        error,
+        addLink,
+        editLink,
+        removeLink,
+        toggleFavorite,
+        trackLinkClick,
+        refreshLinks: fetchLinks
     };
 
     return (
-        <LinkContext.Provider value={{
-            links,
-            categories,
-            isLoading,
-            addLink,
-            editLink,
-            removeLink,
-            toggleFavorite,
-            trackLinkClick,
-            exportLinks,
-            importLinks
-        }}>
+        <LinkContext.Provider value={value}>
             {children}
         </LinkContext.Provider>
     );
 };
 
-export const useLinks = () => useContext(LinkContext);
+// Custom hook to use the link context
+export const useLinks = () => {
+    const context = useContext(LinkContext);
+
+    if (context === undefined) {
+        throw new Error('useLinks must be used within a LinkProvider');
+    }
+
+    return context;
+};
+
+export default LinkContext;

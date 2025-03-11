@@ -1,92 +1,176 @@
-// src/components/SearchBar.jsx
-import React from 'react';
+// src/components/Sidebar.jsx
+import React, { useState } from 'react';
+import { useLinks } from '../context/LinkContext';
+import { useUser } from '../context/UserContext';
+import ThemeToggle from './ThemeToggle';
+import UserProfile from './auth/UserProfile';
 
-const SearchBar = ({
-    onSearch,
-    viewMode,
-    onViewModeChange,
-    sortBy,
-    sortOrder,
-    onSortChange
-}) => {
+const Sidebar = ({ activeCategory, onCategoryChange, onAddLink }) => {
+    const { links, categories } = useLinks();
+    const { user, logout } = useUser();
+    const [showUserProfile, setShowUserProfile] = useState(false);
+
+    // Count links by category
+    const getCategoryCount = (category) => {
+        if (category === 'all') {
+            return links.length;
+        } else if (category === 'favorites') {
+            return links.filter(link => link.favorite).length;
+        } else {
+            return links.filter(link => link.category === category).length;
+        }
+    };
+
+    // Get user initials for avatar
+    const getUserInitials = () => {
+        if (!user || !user.displayName) return '?';
+
+        const names = user.displayName.split(' ');
+        if (names.length === 1) return names[0].charAt(0).toUpperCase();
+
+        return `${names[0].charAt(0)}${names[names.length - 1].charAt(0)}`.toUpperCase();
+    };
+
+    // Handle logout
+    const handleLogout = async () => {
+        try {
+            await logout();
+            // Redirect happens automatically through Router
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
+    };
+
     return (
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between transition-colors duration-200">
-            {/* Search input */}
-            <div className="relative w-full sm:w-auto mb-2 sm:mb-0 sm:mr-4">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+        <>
+            <div className="w-64 bg-gray-900 text-white h-screen flex flex-col transition-colors duration-200 dark:bg-gray-950">
+                {/* User info */}
+                <div className="p-4 border-b border-gray-800">
+                    <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
+                            {getUserInitials()}
+                        </div>
+                        <div className="ml-3 overflow-hidden">
+                            <p className="text-sm font-medium text-white truncate">
+                                {user?.displayName || 'Guest User'}
+                            </p>
+                            <p className="text-xs text-gray-400 truncate">
+                                {user?.email || 'Sign in to sync links'}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setShowUserProfile(true)}
+                            className="ml-auto text-gray-400 hover:text-white"
+                            aria-label="Edit profile"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-                <input
-                    type="text"
-                    placeholder="Search links..."
-                    className="pl-10 pr-4 py-2 w-full sm:w-64 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
-                    onChange={(e) => onSearch(e.target.value)}
-                />
+
+                {/* Logo/header */}
+                <div className="p-4">
+                    <h1 className="text-xl font-bold">Link Harbor</h1>
+                    <p className="text-sm text-gray-400">Your personal link dashboard</p>
+                </div>
+
+                {/* Add Button */}
+                <div className="p-4">
+                    <button
+                        onClick={onAddLink}
+                        className="flex items-center w-full p-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-md transition-colors"
+                    >
+                        <span className="mr-2">+</span>
+                        <span>Add New Link</span>
+                    </button>
+                </div>
+
+                {/* Navigation */}
+                <div className="flex-grow overflow-y-auto p-4">
+                    <div className="uppercase text-xs font-semibold text-gray-500 mb-2">BROWSE</div>
+
+                    <button
+                        className={`flex items-center w-full p-2 rounded-md mb-1 transition-colors ${activeCategory === 'all'
+                            ? 'bg-gray-700 dark:bg-gray-800'
+                            : 'hover:bg-gray-800 dark:hover:bg-gray-800/60'
+                            }`}
+                        onClick={() => onCategoryChange('all')}
+                    >
+                        <span className="mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                            </svg>
+                        </span>
+                        <span>All Links</span>
+                        <span className="ml-auto bg-gray-800 dark:bg-gray-700 px-2 py-1 rounded-full text-xs">
+                            {getCategoryCount('all')}
+                        </span>
+                    </button>
+
+                    <button
+                        className={`flex items-center w-full p-2 rounded-md mb-1 transition-colors ${activeCategory === 'favorites'
+                            ? 'bg-gray-700 dark:bg-gray-800'
+                            : 'hover:bg-gray-800 dark:hover:bg-gray-800/60'
+                            }`}
+                        onClick={() => onCategoryChange('favorites')}
+                    >
+                        <span className="mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                        </span>
+                        <span>Favorites</span>
+                        <span className="ml-auto bg-gray-800 dark:bg-gray-700 px-2 py-1 rounded-full text-xs">
+                            {getCategoryCount('favorites')}
+                        </span>
+                    </button>
+
+                    {/* Categories */}
+                    {categories.length > 0 && (
+                        <>
+                            <div className="uppercase text-xs font-semibold text-gray-500 mt-4 mb-2">CATEGORIES</div>
+
+                            {categories.map(category => (
+                                <button
+                                    key={category}
+                                    className={`flex items-center w-full p-2 rounded-md mb-1 transition-colors ${activeCategory === category
+                                        ? 'bg-gray-700 dark:bg-gray-800'
+                                        : 'hover:bg-gray-800 dark:hover:bg-gray-800/60'
+                                        }`}
+                                    onClick={() => onCategoryChange(category)}
+                                >
+                                    <span className="mr-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+                                        </svg>
+                                    </span>
+                                    <span className="truncate">{category}</span>
+                                    <span className="ml-auto bg-gray-800 dark:bg-gray-700 px-2 py-1 rounded-full text-xs">
+                                        {getCategoryCount(category)}
+                                    </span>
+                                </button>
+                            ))}
+                        </>
+                    )}
+                </div>
+
+                {/* Theme toggle in footer */}
+                <div className="mt-auto border-t border-gray-700 dark:border-gray-800 p-4 flex items-center justify-between">
+                    <ThemeToggle />
+                    <span className="text-sm text-gray-400">v1.0</span>
+                </div>
             </div>
 
-            {/* Controls */}
-            <div className="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-start">
-                {/* View toggle */}
-                <div className="flex border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
-                    <button
-                        onClick={() => onViewModeChange('grid')}
-                        className={`p-2 transition-colors duration-200 ${viewMode === 'grid'
-                                ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-                            }`}
-                        title="Grid view"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                        </svg>
-                    </button>
-                    <button
-                        onClick={() => onViewModeChange('list')}
-                        className={`p-2 transition-colors duration-200 ${viewMode === 'list'
-                                ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-                            }`}
-                        title="List view"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                        </svg>
-                    </button>
+            {/* User Profile Modal */}
+            {showUserProfile && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <UserProfile onClose={() => setShowUserProfile(false)} />
                 </div>
-
-                {/* Sort controls */}
-                <div className="flex">
-                    <select
-                        value={sortBy}
-                        onChange={(e) => onSortChange(e.target.value, sortOrder)}
-                        className="border border-gray-300 dark:border-gray-600 rounded-l-md py-2 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
-                    >
-                        <option value="date">Date Added</option>
-                        <option value="name">Name</option>
-                        <option value="clicks">Clicks</option>
-                    </select>
-
-                    <button
-                        onClick={() => onSortChange(sortBy, sortOrder === 'asc' ? 'desc' : 'asc')}
-                        className="border border-gray-300 dark:border-gray-600 border-l-0 rounded-r-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
-                        title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
-                    >
-                        {sortOrder === 'asc' ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
-                            </svg>
-                        ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
-                        )}
-                    </button>
-                </div>
-            </div>
-        </div>
+            )}
+        </>
     );
 };
 
-export default SearchBar;
+export default Sidebar;
