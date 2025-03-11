@@ -51,3 +51,9 @@ uploads/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Test coverage
+.pytest_cache
+.coverage
+
+gpt-prompt.sh
