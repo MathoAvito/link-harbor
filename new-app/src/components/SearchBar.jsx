@@ -10,18 +10,18 @@ const SearchBar = ({
     onSortChange
 }) => {
     return (
-        <div className="bg-white border-b border-gray-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between transition-colors duration-200">
             {/* Search input */}
             <div className="relative w-full sm:w-auto mb-2 sm:mb-0 sm:mr-4">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
                 <input
                     type="text"
                     placeholder="Search links..."
-                    className="pl-10 pr-4 py-2 w-full sm:w-64 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="pl-10 pr-4 py-2 w-full sm:w-64 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     onChange={(e) => onSearch(e.target.value)}
                 />
             </div>
@@ -29,10 +29,13 @@ const SearchBar = ({
             {/* Controls */}
             <div className="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-start">
                 {/* View toggle */}
-                <div className="flex border border-gray-300 rounded-md overflow-hidden">
+                <div className="flex border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
                     <button
                         onClick={() => onViewModeChange('grid')}
-                        className={`p-2 ${viewMode === 'grid' ? 'bg-gray-100 text-gray-800' : 'text-gray-500'}`}
+                        className={`p-2 transition-colors duration-200 ${viewMode === 'grid'
+                                ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            }`}
                         title="Grid view"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -41,7 +44,10 @@ const SearchBar = ({
                     </button>
                     <button
                         onClick={() => onViewModeChange('list')}
-                        className={`p-2 ${viewMode === 'list' ? 'bg-gray-100 text-gray-800' : 'text-gray-500'}`}
+                        className={`p-2 transition-colors duration-200 ${viewMode === 'list'
+                                ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            }`}
                         title="List view"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,7 +61,7 @@ const SearchBar = ({
                     <select
                         value={sortBy}
                         onChange={(e) => onSortChange(e.target.value, sortOrder)}
-                        className="border border-gray-300 rounded-l-md py-2 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        className="border border-gray-300 dark:border-gray-600 rounded-l-md py-2 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
                     >
                         <option value="date">Date Added</option>
                         <option value="name">Name</option>
@@ -64,7 +70,7 @@ const SearchBar = ({
 
                     <button
                         onClick={() => onSortChange(sortBy, sortOrder === 'asc' ? 'desc' : 'asc')}
-                        className="border border-gray-300 border-l-0 rounded-r-md px-3 py-2"
+                        className="border border-gray-300 dark:border-gray-600 border-l-0 rounded-r-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
                         title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
                     >
                         {sortOrder === 'asc' ? (

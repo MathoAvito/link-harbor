@@ -1,6 +1,7 @@
 // src/components/Sidebar.jsx
 import React from 'react';
 import { useLinks } from '../context/LinkContext';
+import ThemeToggle from './ThemeToggle';
 
 const Sidebar = ({ activeCategory, onCategoryChange, onAddLink }) => {
     const { links, categories } = useLinks();
@@ -17,7 +18,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onAddLink }) => {
     };
 
     return (
-        <div className="w-64 bg-gray-900 text-white h-screen flex flex-col">
+        <div className="w-64 bg-gray-900 text-white h-screen flex flex-col transition-colors duration-200 dark:bg-gray-950">
             {/* Logo/header */}
             <div className="p-4">
                 <h1 className="text-xl font-bold">Link Harbor</h1>
@@ -28,7 +29,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onAddLink }) => {
             <div className="p-4">
                 <button
                     onClick={onAddLink}
-                    className="flex items-center w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+                    className="flex items-center w-full p-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-md transition-colors"
                 >
                     <span className="mr-2">+</span>
                     <span>Add New Link</span>
@@ -40,7 +41,9 @@ const Sidebar = ({ activeCategory, onCategoryChange, onAddLink }) => {
                 <div className="uppercase text-xs font-semibold text-gray-500 mb-2">BROWSE</div>
 
                 <button
-                    className={`flex items-center w-full p-2 rounded-md mb-1 ${activeCategory === 'all' ? 'bg-gray-700' : 'hover:bg-gray-800'
+                    className={`flex items-center w-full p-2 rounded-md mb-1 transition-colors ${activeCategory === 'all'
+                            ? 'bg-gray-700 dark:bg-gray-800'
+                            : 'hover:bg-gray-800 dark:hover:bg-gray-800/60'
                         }`}
                     onClick={() => onCategoryChange('all')}
                 >
@@ -50,13 +53,15 @@ const Sidebar = ({ activeCategory, onCategoryChange, onAddLink }) => {
                         </svg>
                     </span>
                     <span>All Links</span>
-                    <span className="ml-auto bg-gray-800 px-2 py-1 rounded-full text-xs">
+                    <span className="ml-auto bg-gray-800 dark:bg-gray-700 px-2 py-1 rounded-full text-xs">
                         {getCategoryCount('all')}
                     </span>
                 </button>
 
                 <button
-                    className={`flex items-center w-full p-2 rounded-md mb-1 ${activeCategory === 'favorites' ? 'bg-gray-700' : 'hover:bg-gray-800'
+                    className={`flex items-center w-full p-2 rounded-md mb-1 transition-colors ${activeCategory === 'favorites'
+                            ? 'bg-gray-700 dark:bg-gray-800'
+                            : 'hover:bg-gray-800 dark:hover:bg-gray-800/60'
                         }`}
                     onClick={() => onCategoryChange('favorites')}
                 >
@@ -66,7 +71,7 @@ const Sidebar = ({ activeCategory, onCategoryChange, onAddLink }) => {
                         </svg>
                     </span>
                     <span>Favorites</span>
-                    <span className="ml-auto bg-gray-800 px-2 py-1 rounded-full text-xs">
+                    <span className="ml-auto bg-gray-800 dark:bg-gray-700 px-2 py-1 rounded-full text-xs">
                         {getCategoryCount('favorites')}
                     </span>
                 </button>
@@ -79,7 +84,9 @@ const Sidebar = ({ activeCategory, onCategoryChange, onAddLink }) => {
                         {categories.map(category => (
                             <button
                                 key={category}
-                                className={`flex items-center w-full p-2 rounded-md mb-1 ${activeCategory === category ? 'bg-gray-700' : 'hover:bg-gray-800'
+                                className={`flex items-center w-full p-2 rounded-md mb-1 transition-colors ${activeCategory === category
+                                        ? 'bg-gray-700 dark:bg-gray-800'
+                                        : 'hover:bg-gray-800 dark:hover:bg-gray-800/60'
                                     }`}
                                 onClick={() => onCategoryChange(category)}
                             >
@@ -89,13 +96,19 @@ const Sidebar = ({ activeCategory, onCategoryChange, onAddLink }) => {
                                     </svg>
                                 </span>
                                 <span className="truncate">{category}</span>
-                                <span className="ml-auto bg-gray-800 px-2 py-1 rounded-full text-xs">
+                                <span className="ml-auto bg-gray-800 dark:bg-gray-700 px-2 py-1 rounded-full text-xs">
                                     {getCategoryCount(category)}
                                 </span>
                             </button>
                         ))}
                     </>
                 )}
+            </div>
+
+            {/* Theme toggle in footer */}
+            <div className="mt-auto border-t border-gray-700 dark:border-gray-800 p-4 flex items-center justify-between">
+                <ThemeToggle />
+                <span className="text-sm text-gray-400">v1.0</span>
             </div>
         </div>
     );

@@ -124,7 +124,7 @@ const Dashboard = () => {
                 />
 
                 {/* Main content area */}
-                <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
+                <main className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">
                     <div className="max-w-7xl mx-auto">
                         {/* Header with category name */}
                         <div className="flex items-center justify-between mb-6">
@@ -185,8 +185,8 @@ const Dashboard = () => {
                             </div>
                         ) : (
                             <div className={`grid gap-6 ${viewMode === 'grid'
-                                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                                    : 'grid-cols-1'
+                                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                                : 'grid-cols-1'
                                 }`}>
                                 {filteredLinks.map(link => (
                                     <LinkCard

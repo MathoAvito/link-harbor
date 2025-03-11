@@ -21,13 +21,27 @@ const LinkCard = ({ link, viewMode, onDelete, onEdit, onClick, onToggleFavorite 
             return url;
         }
     };
+    
+    // Handle click to open the URL
+    const handleClick = (e) => {
+        // Don't open the link if clicking on action buttons
+        if (e.target.closest('.card-actions') || e.target.closest('button')) {
+            return;
+        }
+        
+        // Open the link in a new tab
+        window.open(link.url, '_blank', 'noopener,noreferrer');
+        
+        // Track the click
+        if (onClick) onClick();
+    };
 
     // Grid view card
     if (viewMode === 'grid') {
         return (
             <div
-                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-                onClick={onClick}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer relative"
+                onClick={handleClick}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
@@ -35,6 +49,15 @@ const LinkCard = ({ link, viewMode, onDelete, onEdit, onClick, onToggleFavorite 
                 <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
                     <span className="text-white text-2xl font-bold">{link.name.charAt(0).toUpperCase()}</span>
                 </div>
+
+                {/* External link indicator on hover */}
+                {isHovered && (
+                    <div className="absolute top-2 right-2 text-white bg-blue-500 bg-opacity-75 rounded-full p-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                    </div>
+                )}
 
                 {/* Card content */}
                 <div className="p-4">
@@ -79,7 +102,7 @@ const LinkCard = ({ link, viewMode, onDelete, onEdit, onClick, onToggleFavorite 
                     </div>
 
                     {/* Actions */}
-                    <div className={`flex justify-end mt-3 space-x-2 ${isHovered ? 'opacity-100' : 'opacity-0'} transition-opacity`}>
+                    <div className={`card-actions flex justify-end mt-3 space-x-2 ${isHovered ? 'opacity-100' : 'opacity-0'} transition-opacity`}>
                         <button
                             className="p-1 text-gray-500 hover:text-blue-600 rounded-full"
                             onClick={(e) => {
@@ -127,8 +150,8 @@ const LinkCard = ({ link, viewMode, onDelete, onEdit, onClick, onToggleFavorite 
     // List view
     return (
         <div
-            className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer flex"
-            onClick={onClick}
+            className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer flex relative"
+            onClick={handleClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -136,6 +159,15 @@ const LinkCard = ({ link, viewMode, onDelete, onEdit, onClick, onToggleFavorite 
             <div className="w-16 bg-gradient-to-b from-blue-500 to-purple-600 flex items-center justify-center">
                 <span className="text-white text-xl font-bold">{link.name.charAt(0).toUpperCase()}</span>
             </div>
+
+            {/* External link indicator on hover */}
+            {isHovered && (
+                <div className="absolute top-2 right-12 text-blue-500 bg-white bg-opacity-75 rounded-full p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                </div>
+            )}
 
             {/* Content */}
             <div className="flex-grow p-4 pr-16 relative">
@@ -175,7 +207,8 @@ const LinkCard = ({ link, viewMode, onDelete, onEdit, onClick, onToggleFavorite 
                 </div>
 
                 {/* Actions (absolute positioned) */}
-                <div className={`absolute right-4 top-1/2 transform -translate-y-1/2 flex space-x-1 ${isHovered ? 'opacity-100' : 'opacity-0'
+                <div className={`card-actions absolute right-4 top-1/2 transform -translate-y-1/2 flex space-x-1 ${
+                    isHovered ? 'opacity-100' : 'opacity-0'
                     } transition-opacity`}>
                     <button
                         className="p-1 text-gray-500 hover:text-blue-600 rounded-full"

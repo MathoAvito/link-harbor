@@ -1,3 +1,4 @@
+// src/App.jsx
 import React from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { LinkProvider } from './context/LinkContext';
@@ -8,7 +9,7 @@ function App() {
     return (
         <ThemeProvider>
             <LinkProvider>
-                <div className="min-h-screen bg-gray-50">
+                <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
                     <Dashboard />
                 </div>
             </LinkProvider>

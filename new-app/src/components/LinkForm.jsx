@@ -22,7 +22,6 @@ const LinkForm = ({ onSave, onCancel, initialData }) => {
         }
     };
 
-
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -73,24 +72,36 @@ const LinkForm = ({ onSave, onCancel, initialData }) => {
 
         // Fetch metadata
         const fetchMetadata = async () => {
-            // ...rest of the function
+            setIsLoading(true);
+            try {
+                // In a real implementation, you would call your metadata extractor here
+                // For now, we'll just extract the domain and use it as the name
+                const domain = new URL(formattedUrl).hostname.replace('www.', '');
+
+                if (!name) {
+                    setName(domain);
+                }
+            } catch (error) {
+                console.error('Error fetching metadata:', error);
+            } finally {
+                setIsLoading(false);
+            }
         };
 
         const timer = setTimeout(fetchMetadata, 500);
         return () => clearTimeout(timer);
     }, [url, name, initialData]);
 
-
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xl">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 transition-colors duration-200">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-xl transition-colors duration-200">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white transition-colors duration-200">
                         {initialData ? 'Edit Link' : 'Add New Link'}
                     </h2>
                     <button
                         onClick={onCancel}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -99,7 +110,7 @@ const LinkForm = ({ onSave, onCancel, initialData }) => {
                 </div>
 
                 {error && (
-                    <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+                    <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-md transition-colors duration-200">
                         {error}
                     </div>
                 )}
@@ -107,7 +118,7 @@ const LinkForm = ({ onSave, onCancel, initialData }) => {
                 <form onSubmit={handleSubmit}>
                     {/* URL Input */}
                     <div className="mb-4">
-                        <label className="block text-gray-700 font-medium mb-2" htmlFor="url">
+                        <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2 transition-colors duration-200" htmlFor="url">
                             URL
                         </label>
                         <div className="relative">
@@ -117,12 +128,12 @@ const LinkForm = ({ onSave, onCancel, initialData }) => {
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
                                 placeholder="https://example.com"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
                                 required
                             />
                             {isLoading && (
                                 <div className="absolute right-3 top-2">
-                                    <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                                    <div className="animate-spin w-5 h-5 border-2 border-blue-500 dark:border-blue-400 border-t-transparent rounded-full"></div>
                                 </div>
                             )}
                         </div>
@@ -130,7 +141,7 @@ const LinkForm = ({ onSave, onCancel, initialData }) => {
 
                     {/* Name Input */}
                     <div className="mb-4">
-                        <label className="block text-gray-700 font-medium mb-2" htmlFor="name">
+                        <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2 transition-colors duration-200" htmlFor="name">
                             Name
                         </label>
                         <input
@@ -139,14 +150,14 @@ const LinkForm = ({ onSave, onCancel, initialData }) => {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="My Awesome Link"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
                             required
                         />
                     </div>
 
                     {/* Description Input */}
                     <div className="mb-4">
-                        <label className="block text-gray-700 font-medium mb-2" htmlFor="description">
+                        <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2 transition-colors duration-200" htmlFor="description">
                             Description (optional)
                         </label>
                         <textarea
@@ -154,20 +165,20 @@ const LinkForm = ({ onSave, onCancel, initialData }) => {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Brief description of this link"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white h-24 transition-colors duration-200"
                         />
                     </div>
 
                     {/* Category Input */}
                     <div className="mb-6">
-                        <label className="block text-gray-700 font-medium mb-2" htmlFor="category">
+                        <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2 transition-colors duration-200" htmlFor="category">
                             Category
                         </label>
                         <select
                             id="category"
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
                         >
                             <option value="">Select a category</option>
                             {categories.map((cat) => (
@@ -182,7 +193,7 @@ const LinkForm = ({ onSave, onCancel, initialData }) => {
                                 value={customCategory}
                                 onChange={(e) => setCustomCategory(e.target.value)}
                                 placeholder="Enter custom category"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white mt-2 transition-colors duration-200"
                                 required
                             />
                         )}
@@ -193,13 +204,13 @@ const LinkForm = ({ onSave, onCancel, initialData }) => {
                         <button
                             type="button"
                             onClick={onCancel}
-                            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
                         >
                             {initialData ? 'Update Link' : 'Save Link'}
                         </button>
