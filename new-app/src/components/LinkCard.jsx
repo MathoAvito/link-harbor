@@ -1,57 +1,16 @@
 // src/components/LinkCard.jsx
 import React, { useState } from 'react';
-import { FiExternalLink, FiTrash2, FiEdit2, FiStar, FiFolder, FiCopy, FiMoreVertical } from 'react-icons/fi';
 import { format } from 'date-fns';
-import { useOutsideClick } from '../hooks/useOutsideClick';
 
-const LinkCard = ({ link, viewMode = 'grid', onDelete, onEdit, onClick, onToggleFavorite }) => {
+const LinkCard = ({ link, viewMode, onDelete, onEdit, onClick, onToggleFavorite }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  // Close menu when clicking outside
-  const menuRef = useOutsideClick(() => {
-    setIsMenuOpen(false);
-  });
-  
-  const handleClick = (e) => {
-    // Don't open the link if clicking on action buttons
-    if (e.target.closest('.card-actions') || e.target.closest('.card-menu')) {
-      return;
+  const formatDate = (dateString) => {
+    try {
+      return format(new Date(dateString), 'MMM d, yyyy');
+    } catch (e) {
+      return dateString;
     }
-    
-    // Open the link
-    window.open(link.url, '_blank', 'noopener,noreferrer');
-    
-    // Track click
-    onClick();
-  };
-  
-  const handleCopyToClipboard = (e) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(link.url);
-    
-    // Could add toast notification here
-    alert('Link copied to clipboard');
-    
-    setIsMenuOpen(false);
-  };
-  
-  const handleDelete = (e) => {
-    e.stopPropagation();
-    onDelete(link.id);
-    setIsMenuOpen(false);
-  };
-  
-  const handleEdit = (e) => {
-    e.stopPropagation();
-    onEdit(link);
-    setIsMenuOpen(false);
-  };
-  
-  const handleToggleFavorite = (e) => {
-    e.stopPropagation();
-    onToggleFavorite(link.id);
-    setIsMenuOpen(false);
   };
   
   const getDomainFromUrl = (url) => {
@@ -63,209 +22,145 @@ const LinkCard = ({ link, viewMode = 'grid', onDelete, onEdit, onClick, onToggle
     }
   };
   
-  const formatDate = (dateString) => {
-    try {
-      return format(new Date(dateString), 'MMM d, yyyy');
-    } catch (e) {
-      return dateString;
-    }
-  };
-  
   // Grid view card
   if (viewMode === 'grid') {
     return (
       <div 
-        className="card cursor-pointer animate-fade-in"
-        onClick={handleClick}
+        className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+        onClick={onClick}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          setIsMenuOpen(false);
-        }}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Favorite indicator */}
-        {link.favorite && (
-          <div className="absolute top-2 right-2 z-10">
-            <FiStar className="text-yellow-500 fill-yellow-500" size={16} />
-          </div>
-        )}
+        {/* Card image/header */}
+        <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+          <span className="text-white text-2xl font-bold">{link.name.charAt(0).toUpperCase()}</span>
+        </div>
         
-        {/* Link preview image */}
-        {link.preview?.image ? (
-          <div className="h-40 overflow-hidden">
-            <img 
-              src={link.preview.image} 
-              alt="" 
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.style.display = 'none';
-              }}
-            />
-          </div>
-        ) : (
-          <div className="h-32 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
-            <div className="text-3xl font-bold text-gray-300 dark:text-gray-600">
-              {link.name.charAt(0).toUpperCase()}
-            </div>
-          </div>
-        )}
-        
+        {/* Card content */}
         <div className="p-4">
-          {/* Title and favicon */}
           <div className="flex items-center mb-2">
-            {link.preview?.favicon && (
-              <img src={link.preview.favicon} alt="" className="w-4 h-4 mr-2" />
+            {/* Favicon placeholder */}
+            <div className="w-4 h-4 bg-gray-200 rounded-full mr-2"></div>
+            <h3 className="font-medium text-gray-900 truncate">{link.name}</h3>
+            
+            {/* Favorite indicator */}
+            {link.favorite && (
+              <button 
+                className="ml-auto text-yellow-500"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite();
+                }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              </button>
             )}
-            <h3 className="font-medium text-gray-900 dark:text-white truncate">{link.name}</h3>
           </div>
           
           {/* Description */}
           {link.description && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-              {link.description}
-            </p>
+            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{link.description}</p>
           )}
           
           {/* URL */}
-          <div className="flex items-center text-xs text-gray-500 dark:text-gray-500 mb-3">
-            <FiExternalLink size={12} className="mr-1" />
-            <span className="truncate">{getDomainFromUrl(link.url)}</span>
-          </div>
+          <div className="text-xs text-gray-500 mb-3">{getDomainFromUrl(link.url)}</div>
           
-          {/* Categories & metadata */}
-          <div className="flex flex-wrap gap-1 mb-2">
-            {link.category && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300">
-                <FiFolder size={10} className="mr-1" />
-                {link.category}
-              </span>
+          {/* Metadata */}
+          <div className="flex items-center text-xs text-gray-500">
+            {link.date && (
+              <span className="mr-3">{formatDate(link.date)}</span>
             )}
             
-            {link.date && (
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {formatDate(link.date)}
-              </span>
+            {typeof link.clicks === 'number' && (
+              <span>{link.clicks} click{link.clicks !== 1 ? 's' : ''}</span>
             )}
           </div>
           
           {/* Actions */}
-          <div 
-            className={`card-actions flex justify-between items-center transition-opacity duration-200 ${
-              isHovered ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              {typeof link.clicks === 'number' && (
-                <span>{link.clicks} click{link.clicks !== 1 ? 's' : ''}</span>
-              )}
-            </div>
+          <div className={`flex justify-end mt-3 space-x-2 ${isHovered ? 'opacity-100' : 'opacity-0'} transition-opacity`}>
+            <button 
+              className="p-1 text-gray-500 hover:text-blue-600 rounded-full"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite();
+              }}
+              title={link.favorite ? "Remove from favorites" : "Add to favorites"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${link.favorite ? 'text-yellow-500 fill-current' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </button>
             
-            <div className="flex space-x-1">
-              <button
-                onClick={handleToggleFavorite}
-                className="p-1 text-gray-500 hover:text-yellow-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                title={link.favorite ? "Remove from favorites" : "Add to favorites"}
-              >
-                <FiStar className={link.favorite ? "fill-yellow-500 text-yellow-500" : ""} size={16} />
-              </button>
-              
-              <button
-                onClick={handleEdit}
-                className="p-1 text-gray-500 hover:text-primary-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                title="Edit link"
-              >
-                <FiEdit2 size={16} />
-              </button>
-              
-              <button
-                onClick={handleCopyToClipboard}
-                className="p-1 text-gray-500 hover:text-primary-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                title="Copy URL"
-              >
-                <FiCopy size={16} />
-              </button>
-              
-              <button
-                onClick={handleDelete}
-                className="p-1 text-gray-500 hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                title="Delete link"
-              >
-                <FiTrash2 size={16} />
-              </button>
-            </div>
+            <button 
+              className="p-1 text-gray-500 hover:text-blue-600 rounded-full"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              title="Edit link"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            
+            <button 
+              className="p-1 text-gray-500 hover:text-red-600 rounded-full"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              title="Delete link"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
     );
   }
   
-  // List view card
+  // List view
   return (
     <div 
-      className="card cursor-pointer animate-fade-in flex"
-      onClick={handleClick}
+      className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer flex"
+      onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setIsMenuOpen(false);
-      }}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Link thumbnail/icon */}
-      <div className="w-16 h-16 flex-shrink-0 m-4">
-        {link.preview?.image ? (
-          <img 
-            src={link.preview.image} 
-            alt="" 
-            className="w-full h-full object-cover rounded"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.style.display = 'none';
-            }}
-          />
-        ) : (
-          <div className="w-full h-full rounded bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
-            <div className="text-xl font-bold text-gray-300 dark:text-gray-600">
-              {link.name.charAt(0).toUpperCase()}
-            </div>
-          </div>
-        )}
+      {/* Left color bar / icon */}
+      <div className="w-16 bg-gradient-to-b from-blue-500 to-purple-600 flex items-center justify-center">
+        <span className="text-white text-xl font-bold">{link.name.charAt(0).toUpperCase()}</span>
       </div>
       
       {/* Content */}
       <div className="flex-grow p-4 pr-16 relative">
-        {/* Favorite indicator */}
-        {link.favorite && (
-          <div className="absolute top-4 right-4">
-            <FiStar className="text-yellow-500 fill-yellow-500" size={16} />
-          </div>
-        )}
-        
-        {/* Title and favicon */}
         <div className="flex items-center mb-1">
-          {link.preview?.favicon && (
-            <img src={link.preview.favicon} alt="" className="w-4 h-4 mr-2" />
+          <h3 className="font-medium text-gray-900">{link.name}</h3>
+          
+          {/* Favorite indicator */}
+          {link.favorite && (
+            <span className="ml-2 text-yellow-500">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            </span>
           )}
-          <h3 className="font-medium text-gray-900 dark:text-white truncate">{link.name}</h3>
         </div>
         
-        {/* Description */}
         {link.description && (
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-1">
-            {link.description}
-          </p>
+          <p className="text-sm text-gray-600 mb-2 line-clamp-1">{link.description}</p>
         )}
         
-        {/* Metadata */}
-        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-          <span className="flex items-center mr-3">
-            <FiExternalLink size={12} className="mr-1" />
-            {getDomainFromUrl(link.url)}
-          </span>
+        <div className="flex items-center text-xs text-gray-500">
+          <span className="mr-3">{getDomainFromUrl(link.url)}</span>
           
           {link.category && (
-            <span className="flex items-center mr-3">
-              <FiFolder size={12} className="mr-1" />
+            <span className="mr-3 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
               {link.category}
             </span>
           )}
@@ -279,56 +174,48 @@ const LinkCard = ({ link, viewMode = 'grid', onDelete, onEdit, onClick, onToggle
           )}
         </div>
         
-        {/* Actions menu */}
-        <div 
-          className={`card-actions absolute right-4 top-1/2 transform -translate-y-1/2 transition-opacity duration-200 ${
-            isHovered ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsMenuOpen(!isMenuOpen);
-              }}
-              className="p-2 text-gray-500 hover:text-primary-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              <FiMoreVertical size={18} />
-            </button>
-            
-            {isMenuOpen && (
-              <div className="card-menu absolute right-0 mt-1 w-40 py-1 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 animate-fade-in">
-                <button
-                  onClick={handleToggleFavorite}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
-                >
-                  <FiStar className={`mr-2 ${link.favorite ? "fill-yellow-500 text-yellow-500" : ""}`} size={14} />
-                  {link.favorite ? "Remove favorite" : "Add to favorites"}
-                </button>
-                <button
-                  onClick={handleEdit}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
-                >
-                  <FiEdit2 className="mr-2" size={14} />
-                  Edit
-                </button>
-                <button
-                  onClick={handleCopyToClipboard}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
-                >
-                  <FiCopy className="mr-2" size={14} />
-                  Copy URL
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center text-red-500"
-                >
-                  <FiTrash2 className="mr-2" size={14} />
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
+        {/* Actions (absolute positioned) */}
+        <div className={`absolute right-4 top-1/2 transform -translate-y-1/2 flex space-x-1 ${
+          isHovered ? 'opacity-100' : 'opacity-0'
+        } transition-opacity`}>
+          <button 
+            className="p-1 text-gray-500 hover:text-blue-600 rounded-full"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite();
+            }}
+            title={link.favorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${link.favorite ? 'text-yellow-500 fill-current' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+          </button>
+          
+          <button 
+            className="p-1 text-gray-500 hover:text-blue-600 rounded-full"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+            title="Edit link"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </button>
+          
+          <button 
+            className="p-1 text-gray-500 hover:text-red-600 rounded-full"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            title="Delete link"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>

@@ -1,7 +1,5 @@
 // src/components/SearchBar.jsx
-import React, { useState } from 'react';
-import { FiSearch, FiX, FiFilter, FiGrid, FiList, FiArrowUp, FiArrowDown } from 'react-icons/fi';
-import { useDebounce } from '../hooks/useDebounce';
+import React from 'react';
 
 const SearchBar = ({ 
   onSearch, 
@@ -11,98 +9,74 @@ const SearchBar = ({
   sortOrder, 
   onSortChange 
 }) => {
-  const [query, setQuery] = useState('');
-  const debouncedQuery = useDebounce(query, 300);
-  
-  // Apply debounced search
-  React.useEffect(() => {
-    onSearch(debouncedQuery);
-  }, [debouncedQuery, onSearch]);
-  
-  const handleClearSearch = () => {
-    setQuery('');
-    onSearch('');
-  };
-
   return (
-    <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3 px-4">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        {/* Search input */}
-        <div className="relative flex-grow max-w-2xl">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <FiSearch className="text-gray-400" size={18} />
-          </div>
-          
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search links..."
-            className="input pl-10 pr-10"
-          />
-          
-          {query && (
-            <button
-              onClick={handleClearSearch}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            >
-              <FiX className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" size={18} />
-            </button>
-          )}
+    <div className="bg-white border-b border-gray-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between">
+      {/* Search input */}
+      <div className="relative w-full sm:w-auto mb-2 sm:mb-0 sm:mr-4">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          placeholder="Search links..."
+          className="pl-10 pr-4 py-2 w-full sm:w-64 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={(e) => onSearch(e.target.value)}
+        />
+      </div>
+      
+      {/* Controls */}
+      <div className="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-start">
+        {/* View toggle */}
+        <div className="flex border border-gray-300 rounded-md overflow-hidden">
+          <button
+            onClick={() => onViewModeChange('grid')}
+            className={`p-2 ${viewMode === 'grid' ? 'bg-gray-100 text-gray-800' : 'text-gray-500'}`}
+            title="Grid view"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+          </button>
+          <button
+            onClick={() => onViewModeChange('list')}
+            className={`p-2 ${viewMode === 'list' ? 'bg-gray-100 text-gray-800' : 'text-gray-500'}`}
+            title="List view"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+          </button>
         </div>
         
-        {/* Controls (View mode, Sort) */}
-        <div className="flex items-center gap-2">
-          {/* View mode toggle */}
-          <div className="flex border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
-            <button
-              onClick={() => onViewModeChange('grid')}
-              className={`p-2 ${
-                viewMode === 'grid' 
-                  ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400' 
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-              title="Grid view"
-            >
-              <FiGrid size={18} />
-            </button>
-            <button
-              onClick={() => onViewModeChange('list')}
-              className={`p-2 ${
-                viewMode === 'list' 
-                  ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400' 
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-              title="List view"
-            >
-              <FiList size={18} />
-            </button>
-          </div>
+        {/* Sort controls */}
+        <div className="flex">
+          <select
+            value={sortBy}
+            onChange={(e) => onSortChange(e.target.value, sortOrder)}
+            className="border border-gray-300 rounded-l-md py-2 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          >
+            <option value="date">Date Added</option>
+            <option value="name">Name</option>
+            <option value="clicks">Clicks</option>
+          </select>
           
-          {/* Sort controls */}
-          <div className="flex">
-            <select
-              value={sortBy}
-              onChange={(e) => onSortChange(e.target.value, sortOrder)}
-              className="input py-2 border-r-0 rounded-r-none"
-            >
-              <option value="date">Date Added</option>
-              <option value="name">Name</option>
-              <option value="clicks">Clicks</option>
-            </select>
-            
-            <button
-              onClick={() => onSortChange(sortBy, sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-l-none rounded-md bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-              title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
-            >
-              {sortOrder === 'asc' ? (
-                <FiArrowUp className="text-gray-600 dark:text-gray-400" />
-              ) : (
-                <FiArrowDown className="text-gray-600 dark:text-gray-400" />
-              )}
-            </button>
-          </div>
+          <button
+            onClick={() => onSortChange(sortBy, sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="border border-gray-300 border-l-0 rounded-r-md px-3 py-2"
+            title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+          >
+            {sortOrder === 'asc' ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
     </div>
