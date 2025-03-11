@@ -2,7 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useUser } from './context/UserContext';
-import Dashboard from './components/Dashboard';
+import RevisedDashboard from './components/RevisedDashboard';
 import AuthPage from './pages/AuthPage';
 
 // Protected route wrapper
@@ -35,20 +35,20 @@ const AppRouter = () => {
                 <Route path="/login" element={<AuthPage />} />
                 <Route path="/register" element={<AuthPage />} />
 
-                {/* Protected routes */}
+                {/* Main Dashboard */}
                 <Route
                     path="/dashboard"
                     element={
                         <ProtectedRoute>
-                            <Dashboard />
+                            <RevisedDashboard />
                         </ProtectedRoute>
                     }
                 />
 
-                {/* Redirect root to dashboard or login */}
+                {/* Redirect root to dashboard */}
                 <Route path="/" element={<Navigate to="/dashboard" />} />
 
-                {/* Catch all route - redirect to dashboard */}
+                {/* Catch all route */}
                 <Route path="*" element={<Navigate to="/dashboard" />} />
             </Routes>
         </Router>

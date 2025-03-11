@@ -1,3 +1,4 @@
+// IMPORTANT: Make sure your App.jsx looks like this
 // src/App.jsx
 import React from 'react';
 import { ThemeProvider } from './context/ThemeContext';
@@ -11,9 +12,7 @@ function App() {
         <ThemeProvider>
             <UserProvider>
                 <LinkProvider>
-                    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-                        <AppRouter />
-                    </div>
+                    <AppRouter />
                 </LinkProvider>
             </UserProvider>
         </ThemeProvider>
