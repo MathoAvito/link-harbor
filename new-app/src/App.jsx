@@ -5,15 +5,15 @@ import Dashboard from './components/Dashboard';
 import './styles.css';
 
 function App() {
-  return (
-    <ThemeProvider>
-      <LinkProvider>
-        <div className="min-h-screen bg-gray-50">
-          <Dashboard />
-        </div>
-      </LinkProvider>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider>
+            <LinkProvider>
+                <div className="min-h-screen bg-gray-50">
+                    <Dashboard />
+                </div>
+            </LinkProvider>
+        </ThemeProvider>
+    );
 }
 
 export default App;

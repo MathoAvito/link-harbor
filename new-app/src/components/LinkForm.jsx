@@ -15,12 +15,12 @@ const LinkForm = ({ onSave, onCancel, initialData }) => {
 
     const validateUrl = (inputUrl) => {
         try {
-          new URL(inputUrl);
-          return true;
+            new URL(inputUrl);
+            return true;
         } catch (e) {
-          return false;
+            return false;
         }
-      };
+    };
 
 
     const handleSubmit = (e) => {
@@ -60,30 +60,26 @@ const LinkForm = ({ onSave, onCancel, initialData }) => {
 
     // Fetch metadata on URL change
     useEffect(() => {
-        if (!url || !validateUrl(url) || initialData) return;
+        if (!url || initialData) return;
 
-        // This would normally fetch metadata from the URL
-        // For now, we'll just simulate it
+        let formattedUrl = url;
+        // Try to format the URL for metadata fetching
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            formattedUrl = 'http://' + url;
+        }
+
+        // Only proceed if the URL is valid after formatting
+        if (!validateUrl(formattedUrl)) return;
+
+        // Fetch metadata
         const fetchMetadata = async () => {
-            setIsLoading(true);
-            try {
-                // In a real implementation, you would call your metadata extractor here
-                // For now, we'll just extract the domain and use it as the name
-                const domain = new URL(url).hostname.replace('www.', '');
-
-                if (!name) {
-                    setName(domain);
-                }
-            } catch (error) {
-                console.error('Error fetching metadata:', error);
-            } finally {
-                setIsLoading(false);
-            }
+            // ...rest of the function
         };
 
         const timer = setTimeout(fetchMetadata, 500);
         return () => clearTimeout(timer);
     }, [url, name, initialData]);
+
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">

@@ -6,53 +6,53 @@ import { useState, useEffect } from 'react';
  * @returns {Object} - Validation state
  */
 export const useLinkValidation = (url) => {
-  const [state, setState] = useState({
-    isValidating: false,
-    isValid: false,
-    error: null
-  });
+    const [state, setState] = useState({
+        isValidating: false,
+        isValid: false,
+        error: null
+    });
 
-  useEffect(() => {
-    if (!url) {
-      setState({ isValidating: false, isValid: false, error: null });
-      return;
-    }
-
-    let isActive = true;
-    setState({ isValidating: true, isValid: false, error: null });
-
-    const validateUrl = () => {
-      try {
-        // Basic URL validation
-        new URL(url);
-        
-        // Check if URL has a valid protocol
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-          throw new Error('URL must start with http:// or https://');
+    useEffect(() => {
+        if (!url) {
+            setState({ isValidating: false, isValid: false, error: null });
+            return;
         }
-        
-        if (isActive) {
-          setState({ isValidating: false, isValid: true, error: null });
-        }
-      } catch (error) {
-        if (isActive) {
-          setState({ 
-            isValidating: false, 
-            isValid: false, 
-            error: error.message || 'Invalid URL format'
-          });
-        }
-      }
-    };
 
-    // Debounce validation
-    const timeout = setTimeout(validateUrl, 500);
+        let isActive = true;
+        setState({ isValidating: true, isValid: false, error: null });
 
-    return () => {
-      isActive = false;
-      clearTimeout(timeout);
-    };
-  }, [url]);
+        const validateUrl = () => {
+            try {
+                // Basic URL validation
+                new URL(url);
 
-  return state;
+                // Check if URL has a valid protocol
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    throw new Error('URL must start with http:// or https://');
+                }
+
+                if (isActive) {
+                    setState({ isValidating: false, isValid: true, error: null });
+                }
+            } catch (error) {
+                if (isActive) {
+                    setState({
+                        isValidating: false,
+                        isValid: false,
+                        error: error.message || 'Invalid URL format'
+                    });
+                }
+            }
+        };
+
+        // Debounce validation
+        const timeout = setTimeout(validateUrl, 500);
+
+        return () => {
+            isActive = false;
+            clearTimeout(timeout);
+        };
+    }, [url]);
+
+    return state;
 };
