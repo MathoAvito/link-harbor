@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="max-w-2xl mx-auto">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8">
-        <h2 class="text-2xl font-bold mb-6 flex items-center text-gray-800 dark:text-gray-100">
-            <i class="fas fa-bookmark mr-3 text-{{ config.theme.primary_color }}-500"></i>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-2xl font-bold mb-6 flex items-center text-gray-700 dark:text-gray-100">
+            <i class="fas fa-bookmark mr-3 text-gray-500"></i>
             Import Chrome Bookmarks
         </h2>
         
         <!-- Instructions Section -->
-        <div class="mb-8 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded-lg">
+        <div class="mb-8 p-4 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-lg">
             <div class="flex items-start space-x-3">
-                <i class="fas fa-info-circle text-blue-500 mt-1"></i>
+                <i class="fas fa-info-circle text-gray-500 mt-1"></i>
                 <div class="flex-1">
-                    <h3 class="font-semibold text-blue-700 dark:text-blue-200 mb-2">How to export Chrome bookmarks:</h3>
-                    <ol class="list-decimal ml-4 text-sm text-blue-700 dark:text-blue-200 space-y-2">
+                    <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-2">How to export Chrome bookmarks:</h3>
+                    <ol class="list-decimal ml-4 text-sm text-gray-600 dark:text-gray-300 space-y-2">
                         <li>Open Chrome and click the three dots menu in the top-right</li>
                         <li>Go to Bookmarks > Bookmark Manager</li>
                         <li>Click the three dots menu in the Bookmark Manager</li>
@@ -27,14 +27,14 @@
         <!-- Upload Form -->
         <form method="POST" enctype="multipart/form-data" class="space-y-6">
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="bookmark_file">
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2" for="bookmark_file">
                     Upload Bookmarks File (HTML)
                 </label>
-                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg hover:border-{{ config.theme.primary_color }}-500 transition-colors">
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg hover:border-gray-500 transition-colors">
                     <div class="space-y-1 text-center">
                         <i class="fas fa-upload text-gray-400 dark:text-gray-500 text-3xl mb-3"></i>
                         <div class="flex text-sm text-gray-600 dark:text-gray-400">
-                            <label for="bookmark_file" class="relative cursor-pointer rounded-md font-medium text-{{ config.theme.primary_color }}-500 hover:text-{{ config.theme.primary_color }}-600">
+                            <label for="bookmark_file" class="relative cursor-pointer rounded-md font-medium text-gray-600 hover:text-gray-700">
                                 <span>Upload a file</span>
                                 <input id="bookmark_file" name="bookmark_file" type="file" accept=".html" class="sr-only">
                             </label>
@@ -48,11 +48,11 @@
             <!-- Action Buttons -->
             <div class="flex items-center justify-end space-x-4 pt-4">
                 <a href="{{ url_for('main.dashboard') }}"
-                   class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                   class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 transition-colors">
                     Cancel
                 </a>
                 <button type="submit"
-                        class="bg-{{ config.theme.primary_color }}-500 hover:bg-{{ config.theme.primary_color }}-600 text-white px-6 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-{{ config.theme.primary_color }}-500">
+                        class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                     Import Bookmarks
                 </button>
             </div>
@@ -83,11 +83,11 @@
     });
 
     function highlight(e) {
-        dropZone.classList.add('border-{{ config.theme.primary_color }}-500');
+        dropZone.classList.add('border-gray-500');
     }
 
     function unhighlight(e) {
-        dropZone.classList.remove('border-{{ config.theme.primary_color }}-500');
+        dropZone.classList.remove('border-gray-500');
     }
 
     dropZone.addEventListener('drop', handleDrop, false);
