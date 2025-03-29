@@ -15,23 +15,23 @@
 
 <div class="{% if config.theme.container_spacing == 'less' %}space-y-4{% else %}space-y-8{% endif %}">
   <!-- View Toggle and Controls -->
-  <div class="flex justify-between items-center">
-    <div class="flex space-x-4">
+  <div class="flex justify-between items-center mb-6">
+    <div class="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
       <a href="{{ url_for('main.dashboard', view='categories') }}" 
-         class="px-4 py-2 rounded-lg {% if view_mode == 'categories' %}bg-gray-600 text-white{% else %}text-gray-600 hover:bg-gray-100{% endif %} transition-colors">
+         class="inline-flex items-center justify-center px-4 py-2.5 rounded-l-lg {% if view_mode == 'categories' %}bg-gray-600 text-white{% else %}text-gray-600 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700{% endif %} transition-colors">
         <i class="fas fa-folder-tree mr-2"></i>
-        Categories View
+        <span>Categories View</span>
       </a>
       <a href="{{ url_for('main.dashboard', view='open') }}"
-         class="px-4 py-2 rounded-lg {% if view_mode == 'open' %}bg-gray-600 text-white{% else %}text-gray-600 hover:bg-gray-100{% endif %} transition-colors">
+         class="inline-flex items-center justify-center px-4 py-2.5 rounded-r-lg border-l border-gray-200 dark:border-gray-700 {% if view_mode == 'open' %}bg-gray-600 text-white{% else %}text-gray-600 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700{% endif %} transition-colors">
         <i class="fas fa-grid-2 mr-2"></i>
-        Open View
+        <span>Open View</span>
       </a>
     </div>
     <div>
       <button id="toggleAllCategories" 
-              class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
-          <i class="fas fa-chevron-up transform rotate-180" id="toggleAllIcon"></i>
+              class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+          <i class="fas fa-chevron-up transform rotate-180 mr-2" id="toggleAllIcon"></i>
           <span id="toggleAllText">Expand All</span>
       </button>
     </div>
