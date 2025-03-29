@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, send_file, session
+from flask import Blueprint, render_template, redirect, url_for, request, flash, send_file, session, jsonify
 from flask_login import login_required
 import json
 import uuid
@@ -201,40 +201,38 @@ def delete_link(link_id):
 @main_bp.route('/update_order', methods=['POST'])
 @login_required
 def update_order():
-    data = request.get_json()
-    category = data.get('category')
-    new_order = data.get('order')  # list of link IDs
-
-    config = load_config()
-    links = config.get('links', [])
-
-    if category == "uncategorized":
-        group_links = [l for l in links if not l.get('category')]
-    else:
-        group_links = [l for l in links if l.get('category') == category]
-
-    link_dict = {l['id']: l for l in group_links}
-    new_group = []
-    for link_id in new_order:
-        if link_id in link_dict:
-            new_group.append(link_dict[link_id])
-    
-    new_links = []
-    for l in links:
-        if category == "uncategorized":
-            if not l.get('category'):
-                new_links.append(new_group.pop(0))
-            else:
-                new_links.append(l)
+    try:
+        data = request.get_json()
+        category = data.get('category')
+        new_order = data.get('order', [])
+        
+        config = load_config()
+        
+        if category == "open":
+            # For open view, maintain the order of all links
+            ordered_links = []
+            for link_id in new_order:
+                link = next((l for l in config['links'] if l['id'] == link_id), None)
+                if link:
+                    ordered_links.append(link)
+            
+            # Add any links that weren't in the order (shouldn't happen, but just in case)
+            for link in config['links']:
+                if link not in ordered_links:
+                    ordered_links.append(link)
+            
+            config['links'] = ordered_links
         else:
-            if l.get('category') == category:
-                new_links.append(new_group.pop(0))
-            else:
-                new_links.append(l)
-    
-    config['links'] = new_links
-    save_config(config)
-    return {"status": "ok"}
+            # For categorized view, maintain the order within each category
+            for link in config['links']:
+                if link['category'] == category:
+                    link['order'] = new_order.index(link['id'])
+        
+        save_config(config)
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        print(f"Error updating order: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @main_bp.route('/update_settings', methods=['POST'])
 @login_required
