@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, send_file
+from flask import Blueprint, render_template, redirect, url_for, request, flash, send_file, session
 from flask_login import login_required
 import json
 import uuid
@@ -11,7 +11,10 @@ main_bp = Blueprint('main', __name__)
 @login_required
 def dashboard():
     config = load_config()
-    return render_template('dashboard.html', config=config)
+    view_mode = request.args.get('view', session.get('view_mode', 'categories'))
+    session['view_mode'] = view_mode
+    template = 'dashboard_open.html' if view_mode == 'open' else 'dashboard.html'
+    return render_template(template, config=config, view_mode=view_mode)
 
 @main_bp.route('/upload_config', methods=['GET', 'POST'])
 @login_required
