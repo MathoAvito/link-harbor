@@ -1,9 +1,13 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, send_file, session, jsonify
-from flask_login import login_required
+from flask_login import login_required, current_user
 import json
 import uuid
 from io import BytesIO
 from app.config_utils import (allowed_file, load_config, save_config, validate_config, parse_chrome_bookmarks, merge_bookmarks_with_config)
+import os
+from werkzeug.utils import secure_filename
+from bs4 import BeautifulSoup
+import pandas as pd
 
 main_bp = Blueprint('main', __name__)
 
@@ -47,58 +51,138 @@ def upload_config():
     
     return render_template('upload_config.html', config=load_config())
 
-@main_bp.route('/upload_bookmarks', methods=['GET', 'POST'])
+@main_bp.route('/upload', methods=['GET'])
+@login_required
+def upload_page():
+    return render_template('upload.html')
+
+@main_bp.route('/upload/bulk', methods=['POST'])
+@login_required
+def upload_bulk():
+    if 'file' not in request.files:
+        flash('No file uploaded', 'error')
+        return redirect(url_for('main.upload_page'))
+    
+    file = request.files['file']
+    if file.filename == '':
+        flash('No file selected', 'error')
+        return redirect(url_for('main.upload_page'))
+
+    if not file.filename.endswith(('.csv', '.xlsx', '.xls')):
+        flash('Invalid file format. Please upload a CSV or Excel file.', 'error')
+        return redirect(url_for('main.upload_page'))
+
+    try:
+        # Read the file using pandas
+        if file.filename.endswith('.csv'):
+            df = pd.read_csv(file)
+        else:
+            df = pd.read_excel(file)
+
+        # Validate required columns
+        required_columns = ['Title', 'URL']
+        if not all(col in df.columns for col in required_columns):
+            flash('Invalid file format. Please use the template provided.', 'error')
+            return redirect(url_for('main.upload_config'))
+
+        # Load existing config
+        config = load_config()
+        
+        # Process each row
+        for _, row in df.iterrows():
+            link = {
+                'id': str(len(config['links']) + 1),
+                'title': row['Title'],
+                'url': row['URL'],
+                'description': row['Description'] if 'Description' in row and pd.notna(row['Description']) else '',
+                'category': row['Category'] if 'Category' in row and pd.notna(row['Category']) else None,
+                'icon': row['Icon'] if 'Icon' in row and pd.notna(row['Icon']) else None
+            }
+            config['links'].append(link)
+
+        # Save updated config
+        save_config(config)
+        flash('Links imported successfully!', 'success')
+
+    except Exception as e:
+        flash(f'Error processing file: {str(e)}', 'error')
+        return redirect(url_for('main.upload_config'))
+
+    return redirect(url_for('main.dashboard'))
+
+@main_bp.route('/upload/bookmarks', methods=['GET', 'POST'])
 @login_required
 def upload_bookmarks():
-    if request.method == 'POST':
-        print("POST request received") # Debug print
-        if 'bookmark_file' not in request.files:
-            print("No bookmark_file in request") # Debug print
-            flash('No file selected')
-            return redirect(request.url)
+    if request.method == 'GET':
+        return redirect(url_for('main.upload_page'))
         
-        file = request.files['bookmark_file']
-        if file.filename == '':
-            print("Empty filename") # Debug print
-            flash('No file selected')
-            return redirect(request.url)
-        
-        if file and file.filename.endswith('.html'):
-            try:
-                # Read the HTML content
-                bookmark_content = file.read().decode('utf-8')
-                print(f"File content length: {len(bookmark_content)}") # Debug print
-                
-                # Parse bookmarks
-                new_bookmarks = parse_chrome_bookmarks(bookmark_content)
-                print(f"Found {len(new_bookmarks)} bookmarks") # Debug print
-                
-                # Load current config
-                config = load_config()
-                
-                # Merge bookmarks with existing config
-                old_count = len(config['links'])
-                config = merge_bookmarks_with_config(config, new_bookmarks)
-                new_count = len(config['links'])
-                print(f"Added {new_count - old_count} new bookmarks") # Debug print
-                
-                # Save updated config
-                save_config(config)
-                
-                flash(f'Successfully imported {len(new_bookmarks)} bookmarks!')
-                return redirect(url_for('main.dashboard'))
-                
-            except Exception as e:
-                print(f"Error occurred: {str(e)}") # Debug print
-                flash(f'Error processing bookmarks: {str(e)}')
-                return redirect(request.url)
-        else:
-            print(f"Invalid file type: {file.filename}") # Debug print
-            flash('Invalid file type. Please upload a Chrome bookmarks HTML file.')
-        
-        return redirect(request.url)
+    if 'file' not in request.files:
+        flash('No file uploaded', 'error')
+        return redirect(url_for('main.upload_page'))
     
-    return render_template('upload_bookmarks.html', config=load_config())
+    file = request.files['file']
+    if file.filename == '':
+        flash('No file selected', 'error')
+        return redirect(url_for('main.upload_page'))
+
+    if not file.filename.endswith(('.html', '.htm')):
+        flash('Invalid file format. Please upload a bookmark HTML file.', 'error')
+        return redirect(url_for('main.upload_page'))
+
+    try:
+        # Parse the HTML file
+        soup = BeautifulSoup(file.read(), 'html.parser')
+        
+        # Load existing config
+        config = load_config()
+        
+        # Find all bookmark entries
+        bookmarks = []
+        current_category = None
+
+        def process_folder(folder, category=None):
+            nonlocal bookmarks
+            # Get folder name if it exists
+            folder_name = folder.find('h3')
+            if folder_name:
+                category = folder_name.get_text()
+            
+            # Process links in this folder
+            links = folder.find_all('a')
+            for link in links:
+                bookmark = {
+                    'id': str(len(config['links']) + len(bookmarks) + 1),
+                    'title': link.get_text(),
+                    'url': link.get('href'),
+                    'description': link.get('description', ''),
+                    'category': category,
+                    'icon': 'bookmark'  # Default icon
+                }
+                bookmarks.append(bookmark)
+
+            # Process subfolders
+            subfolders = folder.find_all('dl')
+            for subfolder in subfolders:
+                process_folder(subfolder, category)
+
+        # Start processing from root folders
+        root_folders = soup.find_all('dl')
+        for folder in root_folders:
+            process_folder(folder)
+
+        # Add all bookmarks to config
+        config['links'].extend(bookmarks)
+        
+        # Save updated config
+        save_config(config)
+        
+        flash(f'Successfully imported {len(bookmarks)} bookmarks!', 'success')
+
+    except Exception as e:
+        flash(f'Error processing bookmarks: {str(e)}', 'error')
+        return redirect(url_for('main.upload_config'))
+
+    return redirect(url_for('main.dashboard'))
 
 @main_bp.route('/download_config')
 @login_required
@@ -143,31 +227,6 @@ def download_config():
         as_attachment=True,
         download_name='dashboard_template.json'
     )
-
-@main_bp.route('/add', methods=['GET', 'POST'])
-@login_required
-def add_link():
-    if request.method == 'POST':
-        config = load_config()
-        
-        url = request.form.get('url')
-        if not (url.startswith('http://') or url.startswith('https://')):
-            url = 'https://' + url
-
-        new_link = {
-            'id': str(uuid.uuid4()),
-            'title': request.form.get('title'),
-            'url': url,
-            'description': request.form.get('description', ''),
-            'category': request.form.get('category', ''),
-            'icon': request.form.get('icon', '')
-        }
-        
-        config['links'].append(new_link)
-        save_config(config)
-        return redirect(url_for('main.dashboard'))
-    
-    return render_template('add_link.html', config=load_config())
 
 @main_bp.route('/edit/<link_id>', methods=['GET', 'POST'])
 @login_required

@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-4xl mx-auto p-6">
+  <div class="space-y-8">
+    <!-- Bulk Upload Options -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+      <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Bulk Import Options</h2>
+      
+      <!-- CSV Upload Section -->
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-3 text-gray-700 dark:text-gray-200">Upload Spreadsheet</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-4">
+          Import multiple links using a CSV or Excel file. 
+          <a href="{{ url_for('static', filename='templates/bulk_import_template.csv') }}" class="text-blue-500 hover:text-blue-600">
+            Download template
+          </a>
+        </p>
+        <form action="{{ url_for('main.upload_bulk') }}" method="post" enctype="multipart/form-data" class="space-y-4">
+          <div class="flex items-center justify-center w-full">
+            <label class="flex flex-col w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <i class="fas fa-file-csv text-2xl text-gray-400 mb-2"></i>
+                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span class="font-semibold">Click to upload</span> or drag and drop
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">CSV or Excel file</p>
+              </div>
+              <input type="file" name="file" class="hidden" accept=".csv,.xlsx,.xls" required>
+            </label>
+          </div>
+          <button type="submit" class="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+            Import from Spreadsheet
+          </button>
+        </form>
+      </div>
+
+      <!-- Browser Bookmarks Import Section -->
+      <div>
+        <h3 class="text-xl font-semibold mb-3 text-gray-700 dark:text-gray-200">Import Browser Bookmarks</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-4">Choose your browser below for import instructions:</p>
+        
+        <div class="space-y-4">
+          <!-- Chrome -->
+          <div class="border border-gray-200 dark:border-gray-600 rounded-lg">
+            <button class="w-full px-4 py-3 text-left focus:outline-none" onclick="toggleInstructions('chrome')">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <i class="fab fa-chrome text-xl"></i>
+                  <span class="font-medium">Google Chrome</span>
+                </div>
+                <i class="fas fa-chevron-down transform transition-transform" id="chrome-chevron"></i>
+              </div>
+            </button>
+            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600" id="chrome-instructions">
+              <ol class="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300">
+                <li>Open Chrome and click the three dots menu (⋮) in the top-right</li>
+                <li>Go to Bookmarks → Bookmark Manager</li>
+                <li>Click the three dots menu in the Bookmark Manager</li>
+                <li>Select "Export bookmarks"</li>
+                <li>Save the HTML file</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Firefox -->
+          <div class="border border-gray-200 dark:border-gray-600 rounded-lg">
+            <button class="w-full px-4 py-3 text-left focus:outline-none" onclick="toggleInstructions('firefox')">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <i class="fab fa-firefox-browser text-xl"></i>
+                  <span class="font-medium">Firefox</span>
+                </div>
+                <i class="fas fa-chevron-down transform transition-transform" id="firefox-chevron"></i>
+              </div>
+            </button>
+            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600" id="firefox-instructions">
+              <ol class="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300">
+                <li>Click the Library button (book icon) in the toolbar</li>
+                <li>Click "Bookmarks" and select "Manage Bookmarks"</li>
+                <li>In the Library window, click "Import and Backup"</li>
+                <li>Select "Export Bookmarks to HTML"</li>
+                <li>Choose a location to save the file</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Brave -->
+          <div class="border border-gray-200 dark:border-gray-600 rounded-lg">
+            <button class="w-full px-4 py-3 text-left focus:outline-none" onclick="toggleInstructions('brave')">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <i class="fas fa-shield-alt text-xl"></i>
+                  <span class="font-medium">Brave</span>
+                </div>
+                <i class="fas fa-chevron-down transform transition-transform" id="brave-chevron"></i>
+              </div>
+            </button>
+            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600" id="brave-instructions">
+              <ol class="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300">
+                <li>Click the menu icon (three lines) in the top-right</li>
+                <li>Go to Bookmarks → Bookmark manager</li>
+                <li>Click the three dots menu (⋮)</li>
+                <li>Select "Export bookmarks"</li>
+                <li>Choose where to save the HTML file</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Safari -->
+          <div class="border border-gray-200 dark:border-gray-600 rounded-lg">
+            <button class="w-full px-4 py-3 text-left focus:outline-none" onclick="toggleInstructions('safari')">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <i class="fab fa-safari text-xl"></i>
+                  <span class="font-medium">Safari</span>
+                </div>
+                <i class="fas fa-chevron-down transform transition-transform" id="safari-chevron"></i>
+              </div>
+            </button>
+            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600" id="safari-instructions">
+              <ol class="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300">
+                <li>Click File in the menu bar</li>
+                <li>Select "Export Bookmarks"</li>
+                <li>Save the file with a .html extension</li>
+                <li>Note: If using iCloud sync, bookmarks can also be exported from Safari on iOS</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Edge -->
+          <div class="border border-gray-200 dark:border-gray-600 rounded-lg">
+            <button class="w-full px-4 py-3 text-left focus:outline-none" onclick="toggleInstructions('edge')">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <i class="fab fa-edge text-xl"></i>
+                  <span class="font-medium">Microsoft Edge</span>
+                </div>
+                <i class="fas fa-chevron-down transform transition-transform" id="edge-chevron"></i>
+              </div>
+            </button>
+            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600" id="edge-instructions">
+              <ol class="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300">
+                <li>Click the three dots menu (...) in the top-right</li>
+                <li>Go to Favorites → Manage favorites</li>
+                <li>Click the three dots menu (⋮)</li>
+                <li>Select "Export favorites"</li>
+                <li>Choose a location to save the HTML file</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Form for Browser Bookmarks -->
+        <form action="{{ url_for('main.upload_bookmarks') }}" method="post" enctype="multipart/form-data" class="mt-6">
+          <div class="flex items-center justify-center w-full">
+            <label class="flex flex-col w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <i class="fas fa-bookmark text-2xl text-gray-400 mb-2"></i>
+                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span class="font-semibold">Click to upload</span> or drag and drop
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Bookmark HTML file</p>
+              </div>
+              <input type="file" name="file" class="hidden" accept=".html,.htm" required>
+            </label>
+          </div>
+          <button type="submit" class="w-full mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+            Import
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleInstructions(browser) {
+  const instructions = document.getElementById(`${browser}-instructions`);
+  const chevron = document.getElementById(`${browser}-chevron`);
+  
+  instructions.classList.toggle('hidden');
+  chevron.style.transform = instructions.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+// File input preview
+document.querySelectorAll('input[type="file"]').forEach(input => {
+  input.addEventListener('change', function(e) {
+    const fileName = e.target.files[0]?.name;
+    if (fileName) {
+      const preview = this.closest('label').querySelector('p.text-sm');
+      preview.innerHTML = `Selected: ${fileName}`;
+    }
+  });
+});
+</script>
+{% endblock %} 
