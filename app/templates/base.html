@@ -2,14 +2,92 @@
 <html lang="en" class="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, shrink-to-fit=no">
   <title>{{ config.title }}</title>
-  <!-- Google Font: Inter -->
+
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="{{ config.title }}">
+  <meta name="description" content="Personal link dashboard for organizing and managing bookmarks">
+  
+  <!-- Browser Compatibility and Mobile Meta Tags -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="{{ config.title }}">
+  <meta name="application-name" content="{{ config.title }}">
+  <meta name="msapplication-TileColor" content="#3b82f6">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="theme-color" content="#3b82f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1f2937" media="(prefers-color-scheme: dark)">
+  
+  <!-- Security Meta Tags -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  
+  <!-- Performance Meta Tags -->
+  <meta http-equiv="Accept-CH" content="DPR, Viewport-Width, Width">
+  <link rel="preload" as="font" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" crossorigin>
+  
+  <!-- Favicon and App Icons with Error Handling -->
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}" onerror="this.onerror=null; this.href='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🔗</text></svg>'">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}" onerror="this.onerror=null; this.href='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🔗</text></svg>'">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}" onerror="this.onerror=null; this.href='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🔗</text></svg>'">
+  <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}" crossorigin="use-credentials">
+  
+  <!-- Preload Icons and Critical Resources -->
+  <link rel="preload" as="image" href="{{ url_for('static', filename='img/favicon-32x32.png') }}" type="image/png">
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js">
+  
+  <!-- DNS Prefetch and Preconnect -->
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  
+  <!-- Stylesheets -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <!-- Sortable.js for drag and drop -->
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  
+  <!-- Sortable.js for drag and drop with async loading -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" async defer></script>
+
+  <!-- Icon Loading Error Handler Script -->
+  <script>
+    // Register service worker for PWA support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/static/service-worker.js').catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+
+    function handleIconError(element) {
+      // Fallback to emoji SVG if icon fails to load
+      element.onerror = null;
+      element.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔗</text></svg>';
+    }
+
+    // Add event listeners for icon error handling
+    document.addEventListener('DOMContentLoaded', function() {
+      const icons = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]');
+      icons.forEach(icon => {
+        icon.addEventListener('error', function() {
+          handleIconError(this);
+        });
+      });
+    });
+  </script>
+  
   <style>
     body {
       font-family: 'Inter', sans-serif;

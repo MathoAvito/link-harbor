@@ -1,11 +1,12 @@
 import os
 import logging
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from dotenv import load_dotenv
 from flask_awscognito import AWSCognitoAuthentication
 from flask_migrate import Migrate
+from datetime import timedelta
 
 # Configure logging
 logging.basicConfig(
@@ -81,3 +82,20 @@ app.context_processor(inject_config)
 # Create the database tables if they don't exist
 with app.app_context():
     db.create_all()
+
+# Add static file caching
+@app.after_request
+def add_cache_headers(response):
+    # Cache static assets
+    if 'static' in request.path:
+        # Cache icons and manifest for 1 week
+        if any(ext in request.path for ext in ['.ico', '.png', '.webmanifest']):
+            response.cache_control.max_age = int(timedelta(weeks=1).total_seconds())
+            response.cache_control.public = True
+            response.headers['Vary'] = 'Accept-Encoding'
+        # Cache other static files for 1 day
+        else:
+            response.cache_control.max_age = int(timedelta(days=1).total_seconds())
+            response.cache_control.public = True
+            response.headers['Vary'] = 'Accept-Encoding'
+    return response
