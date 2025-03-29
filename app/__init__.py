@@ -3,6 +3,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from dotenv import load_dotenv
+from flask_awscognito import AWSCognitoAuthentication
+from flask_migrate import Migrate
 
 # Load environment variables from a .env file if available
 load_dotenv()
@@ -26,6 +28,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') or \
     'sqlite:///' + os.path.join(app.instance_path, 'users.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Set AWS configuration
+app.config['AWS_DEPLOYMENT'] = os.getenv('AWS_DEPLOYMENT', 'False').lower() == 'true'
+
 # Initialize SQLAlchemy
 db = SQLAlchemy(app)
 
@@ -35,12 +40,22 @@ login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.init_app(app)
 
+# Initialize Flask-Migrate
+migrate = Migrate()
+migrate.init_app(app, db)
+
 # Import models so that they register with SQLAlchemy
 from app import models
 
 @login_manager.user_loader
 def load_user(user_id):
     return models.User.query.get(int(user_id))
+
+# Initialize AWS Cognito (if we're in AWS deployment mode)
+aws_auth = None
+if app.config['AWS_DEPLOYMENT']:
+    from app.cognito_config import init_cognito
+    aws_auth = init_cognito(app)
 
 # Register Blueprints
 from app import auth_routes, dashboard_routes

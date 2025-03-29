@@ -1,7 +1,10 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, session, current_app
 from flask_login import login_user, login_required, logout_user, current_user
 from app.models import User
-from app import db
+from app import db, aws_auth
+import boto3
+import botocore.exceptions
+import json
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -9,44 +12,55 @@ auth_bp = Blueprint('auth', __name__)
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        if not username or not password:
-            flash("Please fill in all fields")
-            return redirect(url_for('auth.register'))
-        # Check if user already exists
-        if User.query.filter_by(username=username).first():
-            flash("Username already taken")
-            return redirect(url_for('auth.register'))
-        # Create new user
-        new_user = User(username=username)
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
-        flash("Registration successful. Please log in.")
-        return redirect(url_for('auth.login'))
-    return render_template('register.html')
+    return redirect(aws_auth.get_sign_up_url())
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        user = User.query.filter_by(username=username).first()
-        if user and user.check_password(password):
-            login_user(user)
-            flash("Logged in successfully!")
-            return redirect(url_for('main.dashboard'))
-        flash("Invalid username or password")
-        return redirect(url_for('auth.login'))
-    return render_template('login.html')
+    return redirect(aws_auth.get_sign_in_url())
 
 @auth_bp.route('/logout')
 @login_required
 def logout():
     logout_user()
-    flash("You have been logged out")
-    return redirect(url_for('auth.login'))
+    session.clear()
+    return redirect(aws_auth.get_sign_out_url())
+
+@auth_bp.route('/aws-cognito-callback')
+def aws_cognito_callback():
+    """Handle the callback from AWS Cognito"""
+    try:
+        # Exchange the authorization code for tokens
+        access_token = aws_auth.get_access_token(request.args)
+        id_token = aws_auth.get_id_token(request.args)
+        
+        # Get user info from Cognito
+        cognito_user_info = aws_auth.get_user_info(access_token)
+        username = cognito_user_info.get('username')
+        email = cognito_user_info.get('email')
+        
+        # Check if we know this user
+        user = User.query.filter_by(aws_cognito_id=cognito_user_info.get('sub')).first()
+        if not user:
+            # Create the user in our database
+            user = User(
+                username=username,
+                email=email,
+                aws_cognito_id=cognito_user_info.get('sub')
+            )
+            db.session.add(user)
+            db.session.commit()
+        
+        # Log the user in
+        login_user(user)
+        
+        # Store the tokens in the session
+        session['access_token'] = access_token
+        session['id_token'] = id_token
+        
+        flash("Logged in successfully!")
+        return redirect(url_for('main.dashboard'))
+    except Exception as e:
+        flash(f"Login failed: {str(e)}")
+        return redirect(url_for('auth.login'))
