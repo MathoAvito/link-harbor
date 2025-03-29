@@ -275,8 +275,61 @@
 <!-- Include SortableJS -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
+function initSortable(containerId, category) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    new Sortable(container, {
+        animation: 150,
+        draggable: '.group',
+        handle: '.fa-grip-vertical',
+        ghostClass: 'opacity-50',
+        onEnd: function (evt) {
+            const newOrder = Array.from(container.querySelectorAll('[data-id]'))
+                .map(item => item.getAttribute('data-id'));
+            
+            fetch("{{ url_for('main.update_order') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    category: category,
+                    order: newOrder
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status !== "ok") {
+                    console.error("Error updating order");
+                }
+            })
+            .catch(err => console.error(err));
+        }
+    });
+}
 
-let allExpanded = true;  // Track the current state
+// Initialize Sortable for each category
+{% for category in computed_categories %}
+    initSortable("sortable-{{ category|replace(' ', '-') }}", "{{ category }}");
+{% endfor %}
+initSortable("sortable-uncategorized", "uncategorized");
+
+// Global state for categories expansion
+window.allExpanded = localStorage.getItem('allExpanded') === 'true';
+
+function updateToggleButtonState() {
+    const toggleIcon = document.getElementById('toggleAllIcon');
+    const toggleText = document.getElementById('toggleAllText');
+    
+    if (window.allExpanded) {
+        toggleIcon.style.transform = 'rotate(0deg)';
+        toggleText.textContent = 'Collapse All';
+    } else {
+        toggleIcon.style.transform = 'rotate(180deg)';
+        toggleText.textContent = 'Expand All';
+    }
+}
 
 function collapseCategory(categoryId) {
     const content = document.getElementById(`category-content-${categoryId}`);
@@ -302,50 +355,85 @@ function expandCategory(categoryId) {
 
 function toggleAllCategories() {
     const toggleButton = document.getElementById('toggleAllCategories');
-    const toggleIcon = document.getElementById('toggleAllIcon');
-    const toggleText = document.getElementById('toggleAllText');
-    
-    // Get all category IDs
     const categories = document.querySelectorAll('[id^="category-content-"]');
+    
+    window.allExpanded = !window.allExpanded;
+    localStorage.setItem('allExpanded', window.allExpanded);
     
     categories.forEach(category => {
         const categoryId = category.id.replace('category-content-', '');
         if (window.allExpanded) {
-            collapseCategory(categoryId);
-        } else {
             expandCategory(categoryId);
+        } else {
+            collapseCategory(categoryId);
         }
     });
     
-    // Update button state
-    window.allExpanded = !window.allExpanded;
-    toggleIcon.style.transform = window.allExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
-    toggleText.textContent = window.allExpanded ? 'Collapse All' : 'Expand All';
+    updateToggleButtonState();
 }
 
 // Add event listener for the toggle all button
 document.getElementById('toggleAllCategories').addEventListener('click', toggleAllCategories);
 
+// Initialize category states when the page loads
 function initializeCategoryStates() {
     const categories = document.querySelectorAll('[id^="category-content-"]');
-    window.allExpanded = false;  // Start with collapsed state
     
     categories.forEach(category => {
         const categoryId = category.id.replace('category-content-', '');
-        const icon = document.getElementById('icon-' + categoryId);
+        const savedState = localStorage.getItem(`category-${categoryId}`);
+        const icon = document.getElementById(`icon-${categoryId}`);
         const wrapper = category.firstElementChild;
         
-        // Set to collapsed state by default
-        category.style.height = '0px';
-        icon.style.transform = 'rotate(180deg)';
-        localStorage.setItem('category-' + categoryId, 'collapsed');
+        if (window.allExpanded || savedState === 'expanded') {
+            category.style.height = wrapper.offsetHeight + 'px';
+            icon.style.transform = 'rotate(0deg)';
+            localStorage.setItem(`category-${categoryId}`, 'expanded');
+        } else {
+            category.style.height = '0px';
+            icon.style.transform = 'rotate(180deg)';
+            localStorage.setItem(`category-${categoryId}`, 'collapsed');
+        }
     });
     
-    // Set initial button state to Expand All
-    const toggleIcon = document.getElementById('toggleAllIcon');
-    const toggleText = document.getElementById('toggleAllText');
-    toggleIcon.style.transform = 'rotate(180deg)';
-    toggleText.textContent = 'Expand All';
+    // Update toggle button state
+    updateToggleButtonState();
+}
+
+// Initialize everything when the document is ready
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCategoryStates();
+});
+
+// Category collapse functionality
+function toggleCategory(categoryId) {
+    const content = document.getElementById('category-content-' + categoryId);
+    const icon = document.getElementById('icon-' + categoryId);
+    const wrapper = content.firstElementChild;
+    
+    if (content.style.height === '0px' || !content.style.height) {
+        content.style.height = wrapper.offsetHeight + 'px';
+        icon.style.transform = 'rotate(0deg)';
+        localStorage.setItem('category-' + categoryId, 'expanded');
+    } else {
+        content.style.height = wrapper.offsetHeight + 'px';
+        window.getComputedStyle(content).height;
+        content.style.height = '0px';
+        icon.style.transform = 'rotate(180deg)';
+        localStorage.setItem('category-' + categoryId, 'collapsed');
+    }
+    
+    // Check all categories' state and update the toggle all button accordingly
+    const categories = document.querySelectorAll('[id^="category-content-"]');
+    let allCollapsed = true;
+    categories.forEach(category => {
+        if (category.style.height !== '0px') {
+            allCollapsed = false;
+        }
+    });
+    window.allExpanded = !allCollapsed;
+    localStorage.setItem('allExpanded', window.allExpanded);
+    updateToggleButtonState();
 }
 
 // Improved dropdown functionality
@@ -415,101 +503,6 @@ document.addEventListener('click', function(event) {
         }
     });
 });
-
-function initSortable(containerId, category) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    
-    new Sortable(container, {
-        animation: 150,
-        draggable: '.group',
-        handle: '.fa-grip-vertical',
-        ghostClass: 'opacity-50',
-        onEnd: function (evt) {
-            const newOrder = Array.from(container.querySelectorAll('[data-id]'))
-                .map(item => item.getAttribute('data-id'));
-            
-            fetch("{{ url_for('main.update_order') }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    category: category,
-                    order: newOrder
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.status !== "ok") {
-                    console.error("Error updating order");
-                }
-            })
-            .catch(err => console.error(err));
-        }
-    });
-}
-
-// Initialize everything when the document is ready
-document.addEventListener('DOMContentLoaded', function() {
-    {% for category in computed_categories %}
-        initSortable("sortable-{{ category|replace(' ', '-') }}", "{{ category }}");
-    {% endfor %}
-    initSortable("sortable-uncategorized", "uncategorized");
-    initializeCategoryStates();
-});
-
-// Category collapse functionality
-function toggleCategory(categoryId) {
-    const content = document.getElementById('category-content-' + categoryId);
-    const icon = document.getElementById('icon-' + categoryId);
-    const wrapper = content.firstElementChild;
-    
-    if (content.style.height === '0px' || !content.style.height) {
-        content.style.height = wrapper.offsetHeight + 'px';
-        icon.style.transform = 'rotate(0deg)';
-        localStorage.setItem('category-' + categoryId, 'expanded');
-    } else {
-        content.style.height = wrapper.offsetHeight + 'px';
-        window.getComputedStyle(content).height;
-        content.style.height = '0px';
-        icon.style.transform = 'rotate(180deg)';
-        localStorage.setItem('category-' + categoryId, 'collapsed');
-    }
-    
-    // Check all categories' state and update the toggle all button accordingly
-    const categories = document.querySelectorAll('[id^="category-content-"]');
-    let allCollapsed = true;
-    categories.forEach(category => {
-        if (category.style.height !== '0px') {
-            allCollapsed = false;
-        }
-    });
-    allExpanded = !allCollapsed;
-    const toggleIcon = document.getElementById('toggleAllIcon');
-    const toggleText = document.getElementById('toggleAllText');
-    toggleIcon.style.transform = allExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
-    toggleText.textContent = allExpanded ? 'Collapse All' : 'Expand All';
-}
-
-// Initialize category states
-function initializeCategoryStates() {
-    const categories = document.querySelectorAll('[id^="category-content-"]');
-    categories.forEach(category => {
-        const categoryId = category.id.replace('category-content-', '');
-        const savedState = localStorage.getItem('category-' + categoryId);
-        const icon = document.getElementById('icon-' + categoryId);
-        const wrapper = category.firstElementChild;
-        
-        if (savedState === 'collapsed') {
-            category.style.height = '0px';
-            icon.style.transform = 'rotate(180deg)';
-        } else {
-            category.style.height = wrapper.offsetHeight + 'px';
-            icon.style.transform = 'rotate(0deg)';
-        }
-    });
-}
 
 // Handle window resize
 let resizeTimeout;
