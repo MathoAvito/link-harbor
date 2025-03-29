@@ -3,6 +3,7 @@ import json
 import uuid
 from flask import current_app
 from bs4 import BeautifulSoup
+from flask_login import current_user
 
 ALLOWED_EXTENSIONS = {'json', 'html'}
 
@@ -77,22 +78,36 @@ def merge_bookmarks_with_config(config, new_bookmarks):
     
     return config
 
+def get_user_config_path():
+    """Get the configuration path for the current user."""
+    if not current_user or not current_user.is_authenticated:
+        return None
+    
+    # Create user-specific config directory if it doesn't exist
+    user_config_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], str(current_user.id))
+    os.makedirs(user_config_dir, exist_ok=True)
+    return os.path.join(user_config_dir, 'config.json')
+
+def get_default_config():
+    """Return the default configuration."""
+    return {
+        'title': 'Link Dashboard',
+        'theme': {
+            'primary_color': 'blue',
+            'layout': 'grid',
+            'container_spacing': 'less'
+        },
+        'categories': [],
+        'links': []
+    }
+
 def load_config():
     """Load the active configuration file or return default config.
     Also ensure that each link has a unique 'id'."""
-    config_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'active_config.json')
-    if not os.path.exists(config_path):
-        config = {
-            'title': 'Link Dashboard',
-            'theme': {
-                'primary_color': 'blue',
-                'layout': 'grid',
-                'container_spacing': 'less'
-            },
-            'categories': [],
-            'links': []
-        }
-        return config
+    config_path = get_user_config_path()
+    if not config_path or not os.path.exists(config_path):
+        return get_default_config()
+    
     with open(config_path, 'r') as f:
         config = json.load(f)
     
@@ -107,7 +122,10 @@ def load_config():
 
 def save_config(config):
     """Save the current configuration."""
-    config_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'active_config.json')
+    config_path = get_user_config_path()
+    if not config_path:
+        return
+    
     with open(config_path, 'w') as f:
         json.dump(config, f, indent=4)
 
@@ -134,17 +152,11 @@ def validate_config(config):
 
 def inject_config():
     """Inject configuration into templates."""
+    if not current_user or not current_user.is_authenticated:
+        return dict(config=get_default_config())
+    
     try:
         config = load_config()
     except Exception:
-        config = {
-            'title': 'Link Dashboard',
-            'theme': {
-                'primary_color': 'blue',
-                'layout': 'grid',
-                'container_spacing': 'less'
-            },
-            'categories': [],
-            'links': []
-        }
+        config = get_default_config()
     return dict(config=config)
