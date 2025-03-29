@@ -83,101 +83,130 @@
 
     /* Dark Mode Styles - Improved Colors */
     .dark body {
-      background-color: #1a1b1e;
+      background-color: #111827;  /* Darker, richer background */
       color: #f3f4f6;
     }
     
     .dark nav {
-      background: linear-gradient(135deg, #2e3441 0%, #293547 100%);
+      background: linear-gradient(135deg, #1f2937 0%, #374151 100%);  /* Richer gradient */
     }
     
     .dark .bg-white {
-      background-color: #2d3748;
-    }
-    
-    .dark .text-gray-700 {
-      color: #f3f4f6;
-    }
-    
-    .dark .text-gray-600 {
-      color: #e5e7eb;
-    }
-    
-    .dark .text-gray-500 {
-      color: #d1d5db;
-    }
-    
-    .dark .text-gray-400 {
-      color: #d1d5db !important;
-    }
-    
-    .dark .border-gray-100 {
-      border-color: #4b5563;
+      background-color: #1f2937;  /* Darker card background */
     }
     
     .dark .bg-gray-50 {
+      background-color: #262f3f;  /* Slightly lighter than card background */
+    }
+
+    .dark .bg-gray-100 {
       background-color: #374151;
     }
 
     .dark .bg-gray-700 {
-      background-color: #2d3748;
+      background-color: #1f2937;
+    }
+
+    .dark .bg-gray-800 {
+      background-color: #1a2234;  /* Slightly darker than card background */
+    }
+
+    .dark .text-gray-700 {
+      color: #e5e7eb;
+    }
+    
+    .dark .text-gray-600 {
+      color: #d1d5db;
+    }
+    
+    .dark .text-gray-500 {
+      color: #9ca3af;
+    }
+    
+    .dark .text-gray-400 {
+      color: #9ca3af !important;
+    }
+    
+    .dark .text-gray-300 {
+      color: #d1d5db !important;
+    }
+
+    .dark .border-gray-100 {
+      border-color: #374151;
+    }
+
+    .dark .border-gray-200 {
+      border-color: #2c3648;  /* Subtle border color */
+    }
+
+    .dark .border-gray-600 {
+      border-color: #4b5563;
+    }
+
+    .dark .border-gray-700 {
+      border-color: #374151;
     }
 
     .dark .hover\:bg-gray-50:hover {
-      background-color: #4b5563;
+      background-color: #2c3648;
     }
 
     .dark .hover\:bg-gray-100:hover {
-      background-color: #4b5563;
+      background-color: #374151;
+    }
+
+    .dark .hover\:bg-gray-700:hover {
+      background-color: #2c3648;
     }
     
     /* Improved dark mode form elements */
     .dark select, 
     .dark input, 
     .dark textarea {
-      background-color: #374151;
-      color: #f3f4f6;
-      border-color: #4b5563;
+      background-color: #262f3f;
+      color: #e5e7eb;
+      border-color: #374151;
     }
     
     .dark .flash-message {
       background-color: #1e3a8a;
       border-color: #3b82f6;
-      color: #f3f4f6;
+      color: #e5e7eb;
     }
 
     /* Dark mode scrollbar */
     .dark ::-webkit-scrollbar-track {
-      background: #2d3748;
+      background: #1f2937;
     }
 
     .dark ::-webkit-scrollbar-thumb {
-      background: #4b5563;
+      background: #374151;
     }
 
     .dark ::-webkit-scrollbar-thumb:hover {
-      background: #6b7280;
+      background: #4b5563;
     }
 
     /* Dark Mode Category and Text Improvements */
-    .dark h2.text-gray-800 {
-      color: #f3f4f6 !important;  /* Category titles */
+    .dark h2.text-gray-800,
+    .dark h2.text-gray-700 {
+      color: #e5e7eb !important;  /* Category titles */
     }
 
     .dark h3 {
-      color: #f3f4f6 !important;  /* Card titles */
+      color: #e5e7eb !important;  /* Card titles */
     }
 
-    .dark .text-gray-300 {
-      color: #e5e7eb !important;  /* Descriptions */
+    .dark p {
+      color: #9ca3af !important;  /* Description text */
     }
 
     .dark a {
-      color: #93c5fd !important;  /* Links */
+      color: #60a5fa !important;  /* Links */
     }
 
     .dark a:hover {
-      color: #bfdbfe !important;
+      color: #93c5fd !important;
     }
 
     /* Category Icons */
@@ -189,11 +218,145 @@
       color: #9ca3af !important;  /* Distinctive color for uncategorized icon */
     }
 
-    /* Primary Color Elements in Dark Mode */
-    .dark .text-blue-500,
-    .dark [class*="text-blue"],
-    .dark [class*="text-primary"] {
-      color: #60a5fa !important;
+    /* Card hover effects in dark mode */
+    .dark .group:hover {
+      background-color: #262f3f;
+      border-color: #3b82f6;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Dropdown menu in dark mode */
+    .dark .dropdown-menu {
+      background-color: #1f2937;
+      border-color: #374151;
+    }
+
+    /* Button hover states in dark mode */
+    .dark .hover\:text-gray-700:hover {
+      color: #e5e7eb !important;
+    }
+
+    /* Active/selected states in dark mode */
+    .dark .bg-gray-600 {
+      background-color: #3b82f6 !important;  /* Use blue instead of gray for active states */
+    }
+
+    .dark .hover\:bg-gray-700:hover {
+      background-color: #2563eb !important;  /* Darker blue on hover */
+    }
+
+    /* View Toggle Button Styles */
+    .view-toggle-button {
+      transition: all 0.3s ease;
+      font-weight: 500;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 2.75rem;
+      line-height: 1;
+    }
+
+    .view-toggle-button:first-child {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    .view-toggle-button:last-child {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .view-toggle-button.active {
+      background-color: #3b82f6;
+      color: white !important;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+    }
+
+    .view-toggle-button:not(.active) {
+      background-color: transparent;
+      color: #6b7280;
+    }
+
+    .view-toggle-button:hover:not(.active) {
+      background-color: rgba(203, 213, 225, 0.2);
+      color: #374151;
+    }
+
+    /* Dark mode specific styles for view toggle buttons */
+    .dark .view-toggle-button {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .dark .view-toggle-button.active {
+      background-color: #3b82f6;
+      color: white !important;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+
+    .dark .view-toggle-button:not(.active) {
+      color: #e5e7eb !important;
+      background-color: transparent;
+    }
+
+    .dark .view-toggle-button:hover:not(.active) {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: white !important;
+    }
+
+    /* Expand/Collapse button styles to match view buttons */
+    .expand-collapse-button {
+      transition: all 0.3s ease;
+      font-weight: 500;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 2.75rem;
+      line-height: 1;
+      background-color: #3b82f6;
+      color: white !important;
+      border: 1px solid #3b82f6;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+    }
+
+    .expand-collapse-button:hover {
+      background-color: #2563eb;
+      border-color: #2563eb;
+    }
+
+    .dark .expand-collapse-button {
+      background-color: #3b82f6;
+      color: white !important;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+
+    .dark .expand-collapse-button:hover {
+      background-color: #2563eb;
+      border-color: #2563eb;
+    }
+
+    /* Override any conflicting styles */
+    .dark .bg-gray-600,
+    .dark .hover\:bg-gray-700:hover {
+      background-color: transparent !important;
+    }
+
+    .dark .text-gray-400,
+    .dark .text-gray-300 {
+      color: #e5e7eb !important;
+    }
+
+    .dark .active-view {
+      background-color: #3b82f6 !important;
+      color: white !important;
+      border-color: #3b82f6;
     }
   </style>
 </head>

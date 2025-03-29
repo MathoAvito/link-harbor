@@ -18,19 +18,19 @@
   <div class="flex justify-between items-center mb-6">
     <div class="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
       <a href="{{ url_for('main.dashboard', view='categories') }}" 
-         class="inline-flex items-center justify-center px-4 py-2.5 rounded-l-lg {% if view_mode == 'categories' %}bg-gray-600 text-white{% else %}text-gray-600 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700{% endif %} transition-colors">
+         class="view-toggle-button {% if view_mode == 'categories' %}active{% endif %}">
         <i class="fas fa-folder-tree mr-2"></i>
         <span>Categories View</span>
       </a>
       <a href="{{ url_for('main.dashboard', view='open') }}"
-         class="inline-flex items-center justify-center px-4 py-2.5 rounded-r-lg border-l border-gray-200 dark:border-gray-700 {% if view_mode == 'open' %}bg-gray-600 text-white{% else %}text-gray-600 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700{% endif %} transition-colors">
+         class="view-toggle-button {% if view_mode == 'open' %}active{% endif %}">
         <i class="fas fa-grid-2 mr-2"></i>
         <span>Open View</span>
       </a>
     </div>
     <div>
       <button id="toggleAllCategories" 
-              class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+              class="expand-collapse-button">
           <i class="fas fa-chevron-up transform rotate-180 mr-2" id="toggleAllIcon"></i>
           <span id="toggleAllText">Expand All</span>
       </button>
