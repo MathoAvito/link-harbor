@@ -221,6 +221,12 @@
         <!-- Right side with buttons -->
         <div class="flex items-center space-x-6">
           {% if current_user.is_authenticated %}
+            <!-- Add Link Button -->
+            <a href="{{ url_for('main.add_link') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+              <i class="fas fa-plus"></i>
+              <span>Add Link</span>
+            </a>
+            
             <a href="{{ url_for('main.upload_config') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
               <i class="fas fa-upload"></i>
               <span>Config</span>

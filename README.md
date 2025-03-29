@@ -14,9 +14,8 @@ Your personal harbor for bookmark management - modern, clean, and efficient.
 
 ## 🌟 Features
 
-
 ### Core Features
-- 🔐 **Secure Authentication** - Keep your bookmarks private and secure
+- 🔐 **Enterprise-Grade Authentication** - Secure user management with AWS Cognito
 - 📁 **Smart Organization** - Categorize and group your bookmarks effortlessly
 - 🌓 **Dark/Light Mode** - Easy on your eyes, day or night
 - 📱 **Responsive Design** - Perfect viewing on any device
@@ -28,6 +27,13 @@ Your personal harbor for bookmark management - modern, clean, and efficient.
 - 🔍 **Quick Access** - Find your bookmarks instantly
 - 📊 **Category Management** - Expand/collapse categories for better overview
 - 🎲 **Dynamic Layouts** - Adapt the view to your preferences
+
+### Security Features
+- 🔒 **AWS Cognito Integration** - Enterprise-level authentication and user management
+- 👥 **Multi-User Support** - Each user has their own secure bookmark space
+- 🔑 **OAuth 2.0 Flow** - Industry-standard authentication protocol
+- 📧 **Email Verification** - Ensure user authenticity through email verification
+- 🔄 **Token-Based Sessions** - Secure session management with JWT tokens
 
 ## 🚀 Installation
 
@@ -56,13 +62,7 @@ pip install -r requirements.txt
 ```
 
 4️⃣ **Environment Setup**
-```bash
-# Linux/Mac
-export FLASK_SECRET_KEY='your-secret-key'
-
-# Windows
-set FLASK_SECRET_KEY=your-secret-key
-```
+Copy `.env.example` to `.env` and configure your environment variables.
 
 5️⃣ **Launch**
 ```bash
@@ -71,6 +71,33 @@ flask run
 
 🎉 Access your Link Harbor at `http://localhost:5000`
 
+## 🔐 User Management
+
+Link Harbor implements a robust user management system powered by AWS Cognito, providing:
+
+### Authentication Features
+- Secure email & password authentication
+- Social identity provider integration (optional)
+- Multi-factor authentication support
+- Password policies and account recovery
+- Session management with JWT tokens
+
+### User Features
+- Personal bookmark spaces for each user
+- Secure data isolation between users
+- Profile management
+- Password reset functionality
+- Email verification
+
+### Security Measures
+- OAuth 2.0 authorization flow
+- Secure token handling
+- HTTPS enforcement
+- Protection against common web vulnerabilities
+- Regular security updates
+
+For detailed AWS Cognito setup instructions, see [COGNITO_SETUP.md](COGNITO_SETUP.md)
+
 ## ⚙️ Configuration
 
 ### 🔄 Import Chrome Bookmarks
@@ -78,8 +105,6 @@ flask run
 1. Open Chrome → Bookmarks → Bookmark Manager
 2. Click ⋮ → "Export bookmarks"
 3. In Link Harbor → "Import Bookmarks" → Upload
-
-
 
 ### 🔄 GitHub Actions
 
