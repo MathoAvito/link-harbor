@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from dotenv import load_dotenv
@@ -87,7 +87,7 @@ with app.app_context():
 @app.after_request
 def add_cache_headers(response):
     # Cache static assets
-    if 'static' in request.path:
+    if request.path and 'static' in request.path:
         # Cache icons and manifest for 1 week
         if any(ext in request.path for ext in ['.ico', '.png', '.webmanifest']):
             response.cache_control.max_age = int(timedelta(weeks=1).total_seconds())
