@@ -8,11 +8,13 @@ import os
 from werkzeug.utils import secure_filename
 from bs4 import BeautifulSoup
 import pandas as pd
+from app.auth_routes import verify_cognito_user_exists
 
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 @login_required
+@verify_cognito_user_exists
 def dashboard():
     config = load_config()
     view_mode = request.args.get('view', session.get('view_mode', 'categories'))
@@ -22,6 +24,7 @@ def dashboard():
 
 @main_bp.route('/upload_config', methods=['GET', 'POST'])
 @login_required
+@verify_cognito_user_exists
 def upload_config():
     if request.method == 'POST':
         if 'config_file' not in request.files:
@@ -53,11 +56,13 @@ def upload_config():
 
 @main_bp.route('/upload', methods=['GET'])
 @login_required
+@verify_cognito_user_exists
 def upload_page():
     return render_template('upload.html')
 
 @main_bp.route('/upload/bulk', methods=['POST'])
 @login_required
+@verify_cognito_user_exists
 def upload_bulk():
     if 'file' not in request.files:
         flash('No file uploaded', 'error')
@@ -112,6 +117,7 @@ def upload_bulk():
 
 @main_bp.route('/upload/bookmarks', methods=['GET', 'POST'])
 @login_required
+@verify_cognito_user_exists
 def upload_bookmarks():
     if request.method == 'GET':
         return redirect(url_for('main.upload_page'))
@@ -186,6 +192,7 @@ def upload_bookmarks():
 
 @main_bp.route('/download_config')
 @login_required
+@verify_cognito_user_exists
 def download_config():
     template_config = {
         'title': 'My Dashboard',
@@ -230,6 +237,7 @@ def download_config():
 
 @main_bp.route('/edit/<link_id>', methods=['GET', 'POST'])
 @login_required
+@verify_cognito_user_exists
 def edit_link(link_id):
     config = load_config()
     link = next((l for l in config['links'] if l['id'] == link_id), None)
@@ -251,6 +259,7 @@ def edit_link(link_id):
 
 @main_bp.route('/delete/<link_id>')
 @login_required
+@verify_cognito_user_exists
 def delete_link(link_id):
     config = load_config()
     config['links'] = [l for l in config['links'] if l['id'] != link_id]
@@ -259,6 +268,7 @@ def delete_link(link_id):
 
 @main_bp.route('/update_order', methods=['POST'])
 @login_required
+@verify_cognito_user_exists
 def update_order():
     try:
         data = request.get_json()
@@ -295,6 +305,7 @@ def update_order():
 
 @main_bp.route('/update_settings', methods=['POST'])
 @login_required
+@verify_cognito_user_exists
 def update_settings():
     config = load_config()
     container_spacing = request.form.get('container_spacing', 'less')
