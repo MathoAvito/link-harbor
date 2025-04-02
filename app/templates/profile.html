@@ -1,4 +1,9 @@
 {% extends "base.html" %}
+
+{% block styles %}
+{{ super() }}
+{% endblock %}
+
 {% block content %}
 <div class="max-w-4xl mx-auto p-6">
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
@@ -15,37 +20,37 @@
       <!-- Profile management cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Username card -->
-        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-100 dark:border-blue-800 shadow-sm">
+        <div style="background-color: #EFF6FF !important; border-color: #DBEAFE !important;" class="bg-blue-50 border border-blue-100 rounded-xl shadow-sm p-6">
           <div class="flex items-start mb-4">
-            <div class="p-2 rounded-full bg-blue-100 dark:bg-blue-800 mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 dark:text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div style="background-color: #DBEAFE !important;" class="p-2 rounded-full bg-blue-100 mr-3">
+              <svg style="color: #2563EB !important;" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Username</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Change your account username</p>
+              <h3 style="color: #1F2937 !important;" class="text-lg font-semibold text-gray-800">Username</h3>
+              <p style="color: #4B5563 !important;" class="text-sm font-normal text-gray-600">Change your account username</p>
             </div>
           </div>
-          <a href="{{ url_for('auth.change_username') }}" class="block w-full px-4 py-2 text-center bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+          <a href="{{ url_for('auth.change_username') }}" style="color: white !important;" class="block w-full px-4 py-2 text-center bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
             Change Username
           </a>
         </div>
         
         <!-- Password card -->
-        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-xl border border-purple-100 dark:border-purple-800 shadow-sm">
+        <div style="background-color: #FAF5FF !important; border-color: #F3E8FF !important;" class="bg-purple-50 border border-purple-100 rounded-xl shadow-sm p-6">
           <div class="flex items-start mb-4">
-            <div class="p-2 rounded-full bg-purple-100 dark:bg-purple-800 mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600 dark:text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div style="background-color: #F3E8FF !important;" class="p-2 rounded-full bg-purple-100 mr-3">
+              <svg style="color: #9333EA !important;" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Password</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Update your account password</p>
+              <h3 style="color: #1F2937 !important;" class="text-lg font-semibold text-gray-800">Password</h3>
+              <p style="color: #4B5563 !important;" class="text-sm font-normal text-gray-600">Update your account password</p>
             </div>
           </div>
-          <a href="{{ url_for('auth.change_password') }}" class="block w-full px-4 py-2 text-center bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
+          <a href="{{ url_for('auth.change_password') }}" style="color: white !important;" class="block w-full px-4 py-2 text-center bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
             Change Password
           </a>
         </div>
