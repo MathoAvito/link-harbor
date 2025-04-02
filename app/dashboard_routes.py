@@ -302,5 +302,10 @@ def update_settings():
         config['theme'] = {}
     config['theme']['container_spacing'] = container_spacing
     save_config(config)
+    
+    # Check if this is an AJAX request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'status': 'success'})
+    
     flash('Settings updated!')
     return redirect(url_for('main.dashboard'))

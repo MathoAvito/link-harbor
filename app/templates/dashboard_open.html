@@ -12,12 +12,12 @@
     <div class="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
       <a href="{{ url_for('main.dashboard', view='categories') }}" 
          class="view-toggle-button {% if view_mode == 'categories' %}active{% endif %}">
-        <i class="fas fa-folder-tree mr-2"></i>
+        <i class="fas fa-folder mr-2"></i>
         <span>Categories View</span>
       </a>
       <a href="{{ url_for('main.dashboard', view='open') }}"
          class="view-toggle-button {% if view_mode == 'open' %}active{% endif %}">
-        <i class="fas fa-grid-2 mr-2"></i>
+        <i class="fas fa-th-large mr-2"></i>
         <span>Open View</span>
       </a>
     </div>
