@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, current_app
 from flask_login import login_user, login_required, logout_user, current_user
 from app.models import User
-from app import db
+from app import db, aws_auth
 import boto3
 import botocore.exceptions
 import json
@@ -81,13 +81,8 @@ def init_oauth(app):
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
-    
-    logger.debug("Redirecting to Cognito OAuth signup")
-    return oauth.cognito.authorize_redirect(
-        redirect_uri=url_for('auth.aws_cognito_callback', _external=True),
-        response_type='code',
-        scope='openid email profile'
-    )
+    logger.debug("Redirecting to Cognito sign-up URL")
+    return redirect(aws_auth.get_sign_up_url())
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -96,23 +91,8 @@ def login():
     
     # Clear any existing session data
     session.clear()
-    
-    # Store the next URL in session if provided
-    next_url = request.args.get('next')
-    if next_url:
-        session['next'] = next_url
-    
-    # Generate and store nonce
-    nonce = secrets.token_urlsafe(32)
-    session['nonce'] = nonce
-    
-    logger.debug("Redirecting to Cognito OAuth login")
-    return oauth.cognito.authorize_redirect(
-        redirect_uri=url_for('auth.aws_cognito_callback', _external=True),
-        response_type='code',
-        scope='openid email profile',
-        nonce=nonce
-    )
+    logger.debug("Redirecting to Cognito sign-in URL")
+    return redirect(aws_auth.get_sign_in_url())
 
 @auth_bp.route('/logout')
 @login_required
@@ -124,14 +104,14 @@ def logout():
     
     logger.debug("Constructing Cognito sign-out URL")
     
-    # Construct the sign-out URL using the full domain
-    domain = f"https://{current_app.config['AWS_COGNITO_DOMAIN']}.auth.{current_app.config['AWS_DEFAULT_REGION']}.amazoncognito.com"
+    # Construct the sign-out URL
+    cognito_domain = current_app.config['AWS_COGNITO_DOMAIN']
     client_id = current_app.config['AWS_COGNITO_USER_POOL_CLIENT_ID']
     logout_uri = url_for('auth.login', _external=True)
     
     # Cognito logout endpoint
     logout_url = (
-        f"{domain}/logout?"
+        f"{cognito_domain}/logout?"
         f"client_id={client_id}&"
         f"logout_uri={logout_uri}"
     )
@@ -143,51 +123,70 @@ def logout():
 def aws_cognito_callback():
     """Handle the callback from AWS Cognito"""
     try:
-        # Get the token from OAuth callback
-        token = oauth.cognito.authorize_access_token()
-        logger.debug("Access token received")
+        # Log the incoming request parameters
+        logger.info(f"Callback received with args: {request.args}")
+        logger.debug(f"Full request headers: {dict(request.headers)}")
         
-        if not token:
-            raise ValueError("No token received")
-        
-        # Get the nonce from session
-        nonce = session.get('nonce')
-        if not nonce:
-            raise ValueError("No nonce found in session")
-        
-        # Get user info from the token
-        userinfo = oauth.cognito.parse_id_token(token, nonce=nonce)
-        logger.debug(f"User info from token: {json.dumps(userinfo)}")
-        
-        # Extract user details
-        username = userinfo.get('username') or userinfo.get('cognito:username')
-        email = userinfo.get('email')
-        sub = userinfo.get('sub')
-        
-        if not username or not sub:
-            logger.error(f"Missing required user info: username={username}, sub={sub}")
-            flash("Failed to get complete user information")
+        if 'error' in request.args:
+            logger.error(f"Error in callback: {request.args.get('error')}")
+            logger.error(f"Error description: {request.args.get('error_description')}")
+            flash(f"Authentication error: {request.args.get('error_description', 'Unknown error')}")
             return redirect(url_for('auth.login'))
+
+        # Log the state parameter
+        state = request.args.get('state')
+        logger.debug(f"State parameter: {state}")
         
-        # If email is not in the token, use username@example.com as a fallback
-        if not email:
-            email = f"{username}@example.com"
-            logger.warning(f"Email not found in token, using fallback: {email}")
-        
-        return handle_user_login(
-            username=username,
-            email=email,
-            sub=sub,
-            access_token=token['access_token'],
-            id_token=token['id_token']
-        )
-        
-    except OAuthError as e:
-        logger.error(f"OAuth error: {str(e)}")
-        flash(f"Authentication error: {str(e)}")
-        return redirect(url_for('auth.login'))
+        # Exchange the authorization code for tokens
+        logger.debug("Attempting to exchange authorization code for access token")
+        try:
+            # Get the access token using the library's method
+            access_token = aws_auth.get_access_token(request.args)
+            logger.debug(f"Access token received")
+            
+            if not access_token:
+                raise ValueError("No access token received")
+            
+            # Decode the JWT token to get user info
+            logger.debug("Decoding JWT token")
+            token_parts = access_token.split('.')
+            if len(token_parts) != 3:
+                raise ValueError("Invalid JWT token format")
+            
+            # Decode the payload (second part)
+            payload = token_parts[1]
+            # Add padding if needed
+            payload += '=' * ((4 - len(payload) % 4) % 4)
+            decoded_payload = base64.b64decode(payload)
+            user_info = json.loads(decoded_payload)
+            logger.debug(f"Decoded token payload: {json.dumps(user_info)}")
+            
+            # Extract user details from token claims
+            username = user_info.get('username')
+            # The email claim might be in the token if we requested the 'email' scope
+            email = user_info.get('email')
+            # The 'sub' claim is the unique identifier for the user
+            sub = user_info.get('sub')
+            
+            if not username or not sub:
+                logger.error(f"Missing required user info: username={username}, sub={sub}")
+                flash("Failed to get complete user information")
+                return redirect(url_for('auth.login'))
+            
+            # If email is not in the token, use username@example.com as a fallback
+            if not email:
+                email = f"{username}@example.com"
+                logger.warning(f"Email not found in token, using fallback: {email}")
+            
+            return handle_user_login(username, email, sub, access_token, access_token)  # Using access_token as id_token for now
+            
+        except Exception as e:
+            logger.error(f"Failed to get tokens: {str(e)}")
+            flash("Failed to authenticate. Please try again.")
+            return redirect(url_for('auth.login'))
     except Exception as e:
         logger.error(f"Login failed: {str(e)}", exc_info=True)
+        logger.error(f"Request args: {request.args}")
         flash(f"Login failed: {str(e)}")
         return redirect(url_for('auth.login'))
 
@@ -263,6 +262,7 @@ def calculate_secret_hash(username):
 
 @auth_bp.route('/update-username', methods=['POST'])
 @login_required
+@verify_cognito_user_exists
 def update_username():
     new_username_input = request.form.get('new_username')
     current_password = request.form.get('current_password')
@@ -385,6 +385,7 @@ def update_username():
 
 @auth_bp.route('/update-password', methods=['POST'])
 @login_required
+@verify_cognito_user_exists
 def update_password():
     current_password = request.form.get('current_password')
     new_password = request.form.get('new_password')
@@ -432,7 +433,7 @@ def update_password():
         return redirect(url_for('auth.change_password'))
 
 def handle_user_login(username, email, sub, access_token, id_token):
-    """Helper function to handle user login/creation after successful authentication"""
+    """Helper function to handle user login after successful authentication"""
     
     # First, check for users that have been deleted in Cognito but still exist in our database
     # This helps clean up orphaned records
@@ -462,72 +463,26 @@ def handle_user_login(username, email, sub, access_token, id_token):
         # Log the error but continue with the login process
         logger.error(f"Error during Cognito user cleanup: {str(e)}")
     
-    # Continue with the regular login process
-    # Clean up username from potential Cognito prefix if necessary
-    # Sometimes Cognito might return 'cognito:username' which might be the sub
-    # Ensure we use the actual preferred username if available
-    actual_username = username # Assume it's correct initially
-    if sub == username and email: # If username is the sub, try email name part
-        actual_username = email.split('@')[0]
-        logger.info(f"Using email prefix '{actual_username}' as username instead of Cognito sub.")
-    elif ':' in username: # Handle potential prefixes like 'cognito:...' or others
-        actual_username = username.split(':')[-1]
-        logger.info(f"Cleaned potential prefix from username: '{username}' -> '{actual_username}'")
-
-    user = None
-    # 1. Check if user exists by Cognito ID (sub)
+    # Check if we know this user
     user = User.query.filter_by(aws_cognito_id=sub).first()
     
-    if user:
-        # User found by Cognito ID - this is the expected case for returning users
-        logger.info(f"Found existing user by Cognito ID (sub): {user.username} ({sub})")
-        # Optionally update local username/email if they might change in Cognito
-        needs_commit = False
-        if user.username != actual_username:
-            logger.info(f"Updating local username for {sub} from '{user.username}' to '{actual_username}'")
-            # Before changing username, ensure the new one isn't taken by another user
-            existing_with_new_name = User.query.filter(User.username == actual_username, User.aws_cognito_id != sub).first()
-            if existing_with_new_name:
-                logger.error(f"Cannot update username for {sub}: username '{actual_username}' already exists for a different user ({existing_with_new_name.aws_cognito_id})")
-                flash(f"Could not update username to '{actual_username}' as it is already in use.", "warning")
-            else:
-                user.username = actual_username
-                needs_commit = True
-        if user.email != email:
-            logger.info(f"Updating local email for {user.username}")
-            user.email = email
-            needs_commit = True
-        if needs_commit:
-            try:
-                db.session.commit()
-            except IntegrityError:
-                 db.session.rollback()
-                 logger.error(f"IntegrityError while updating user {user.username} ({sub}). Username '{actual_username}' might already exist.", exc_info=True)
-                 # Don't block login, but flash a warning
-                 flash("Could not update profile information; the username might be taken.", "warning")
-            except Exception as e:
-                 db.session.rollback()
-                 logger.error(f"Error updating user {user.username} ({sub}): {e}", exc_info=True)
-                 flash("Could not update profile information.", "warning")
-    else:
-        # No user found by Cognito ID (sub). Try to find by username.
-        logger.info(f"No user found for Cognito ID {sub}. Checking by username '{actual_username}'.")
-        existing_user_by_username = User.query.filter_by(username=actual_username).first()
+    if not user:
+        # Check for existing user by username
+        existing_user_by_username = User.query.filter_by(username=username).first()
         
         if existing_user_by_username:
-            # Found a user by username, but not Cognito ID. Link them.
-            logger.warning(f"Found existing local user '{actual_username}' by username. Linking to Cognito ID {sub}.")
+            # Found a user by username, update their Cognito ID
+            logger.warning(f"Found existing local user '{username}' by username. Updating Cognito ID to {sub}.")
             user = existing_user_by_username
-            user.aws_cognito_id = sub # Link to the new Cognito sub
-            user.email = email # Update email too
+            user.aws_cognito_id = sub  # Link to the Cognito sub
+            user.email = email  # Update email too
             try:
                 db.session.commit()
-                logger.info(f"Successfully linked local user '{actual_username}' to Cognito ID {sub}")
+                logger.info(f"Successfully updated Cognito ID for user '{username}'")
             except Exception as e:
                 db.session.rollback()
-                logger.error(f"Failed to link local user '{actual_username}' to Cognito ID {sub}: {e}", exc_info=True)
+                logger.error(f"Failed to update Cognito ID for user '{username}': {e}", exc_info=True)
                 flash("Failed to link your existing profile. Please contact support.", "error")
-                # Prevent login in this case as linking failed
                 return redirect(url_for('auth.login'))
         else:
             # Check for existing user by email
@@ -537,8 +492,8 @@ def handle_user_login(username, email, sub, access_token, id_token):
                 # Found user by email - update their Cognito ID and username
                 logger.warning(f"Found existing local user with email '{email}'. Updating Cognito ID and username.")
                 user = existing_user_by_email
-                user.aws_cognito_id = sub  # Link to the new Cognito sub
-                user.username = actual_username  # Update username to match Cognito
+                user.aws_cognito_id = sub  # Link to the Cognito sub
+                user.username = username  # Update username
                 try:
                     db.session.commit()
                     logger.info(f"Successfully updated existing user with email '{email}' to Cognito ID {sub}")
@@ -548,44 +503,63 @@ def handle_user_login(username, email, sub, access_token, id_token):
                     flash("Failed to link your existing profile. Please contact support.", "error")
                     return redirect(url_for('auth.login'))
             else:
-                # User does not exist by Cognito ID, username, or email - create a new user
+                # No existing user found - create a new one
+                logger.info(f"Creating new user with username={username}, email={email}")
                 try:
-                    logger.info(f"Creating new user with username={actual_username}, email={email}, sub={sub}")
                     user = User(
-                        username=actual_username,
+                        username=username,
                         email=email,
                         aws_cognito_id=sub
                     )
                     db.session.add(user)
                     db.session.commit()
-                    logger.info(f"Successfully created and saved new user: {actual_username}")
+                    logger.info(f"Successfully created new user: {username}")
                 except IntegrityError as e:
                     db.session.rollback()
-                    logger.error(f"Database integrity error during user creation for {actual_username}: {e}", exc_info=True)
+                    logger.error(f"Database integrity error during user creation for {username}: {e}", exc_info=True)
                     flash("Failed to create user profile due to a database conflict. Please try with a different username or contact support.", "error")
                     return redirect(url_for('auth.login'))
                 except Exception as e:
                     db.session.rollback()
-                    logger.error(f"Unexpected error during user creation for {actual_username}: {e}", exc_info=True)
+                    logger.error(f"Unexpected error during user creation for {username}: {e}", exc_info=True)
                     flash("An unexpected error occurred while creating your user profile.", "error")
                     return redirect(url_for('auth.login'))
-
-    # If we reach here, 'user' should be valid (found existing, linked existing, or newly created)
-    if user:
-        login_user(user) # Log the user in using Flask-Login
-        logger.info(f"Successfully logged in user {user.username}")
+    else:
+        logger.info(f"Found existing user: {user.username}")
+        # Update user info if needed
+        needs_update = False
+        if user.username != username:
+            user.username = username
+            needs_update = True
+        if user.email != email:
+            user.email = email
+            needs_update = True
         
-        # Store the tokens in the session for potential future use (like API calls)
+        if needs_update:
+            try:
+                db.session.commit()
+                logger.info(f"Updated user information for {username}")
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Failed to update user information: {e}")
+                # Not critical, continue with login
+    
+    # Log the user in
+    if user:
+        login_user(user)
+        logger.info(f"Successfully logged in user {username}")
+        
+        # Store the tokens in the session
         session['access_token'] = access_token
         session['id_token'] = id_token
         
-        next_url = session.pop('next', url_for('main.dashboard'))
+        next_url = session.get('next', url_for('main.dashboard'))
         logger.info(f"Redirecting to {next_url}")
         
-        flash("Logged in successfully!", "success")
+        flash("Logged in successfully!")
         return redirect(next_url)
     else:
         # Should not happen if logic above is correct, but handle defensively
         logger.error("User object is None after attempting find/link/create.")
-        flash("Login failed due to an internal error.", "error")
+        flash("Login failed due to an internal error.")
         return redirect(url_for('auth.login'))

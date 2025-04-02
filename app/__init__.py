@@ -4,6 +4,7 @@ from flask import Flask, send_from_directory, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from dotenv import load_dotenv
+from flask_awscognito import AWSCognitoAuthentication
 from flask_migrate import Migrate
 from datetime import timedelta
 
@@ -61,14 +62,20 @@ login_manager.init_app(app)
 migrate = Migrate()
 migrate.init_app(app, db)
 
-# Import models
+# Import models so that they register with SQLAlchemy
 from app import models
 
 @login_manager.user_loader
 def load_user(user_id):
     return models.User.query.get(int(user_id))
 
-# Import and register blueprints
+# Initialize AWS Cognito (if we're in AWS deployment mode)
+aws_auth = None
+if app.config['AWS_DEPLOYMENT']:
+    from app.cognito_config import init_cognito
+    aws_auth = init_cognito(app)
+
+# Register Blueprints
 from app import auth_routes, dashboard_routes
 app.register_blueprint(auth_routes.auth_bp)
 app.register_blueprint(dashboard_routes.main_bp)
