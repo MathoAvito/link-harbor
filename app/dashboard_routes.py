@@ -320,3 +320,19 @@ def update_settings():
     
     flash('Settings updated!')
     return redirect(url_for('main.dashboard'))
+
+@main_bp.route('/delete_all_bookmarks', methods=['POST'])
+@login_required
+@verify_cognito_user_exists
+def delete_all_bookmarks():
+    if request.method == 'POST':
+        try:
+            config = load_config()
+            # Clear all links by setting to empty list
+            config['links'] = []
+            save_config(config)
+            flash('All bookmarks have been deleted successfully.', 'success')
+        except Exception as e:
+            flash(f'Error deleting bookmarks: {str(e)}', 'error')
+    
+    return redirect(url_for('main.dashboard'))
