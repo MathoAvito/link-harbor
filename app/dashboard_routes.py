@@ -336,3 +336,52 @@ def delete_all_bookmarks():
             flash(f'Error deleting bookmarks: {str(e)}', 'error')
     
     return redirect(url_for('main.dashboard'))
+
+@main_bp.route('/add_bookmark', methods=['GET', 'POST'])
+@login_required
+@verify_cognito_user_exists
+def add_bookmark():
+    """Add a single bookmark manually."""
+    # Get categories for the dropdown
+    config = load_config()
+    categories = config.get('categories', [])
+    
+    if request.method == 'POST':
+        try:
+            title = request.form.get('title', '').strip()
+            url = request.form.get('url', '').strip()
+            description = request.form.get('description', '').strip()
+            category = request.form.get('category', '').strip() or None
+            icon = request.form.get('icon', '').strip() or None
+            
+            # Validate required fields
+            if not title or not url:
+                flash('Title and URL are required fields.', 'error')
+                return render_template('add_bookmark.html', categories=categories)
+            
+            # Add http:// or https:// if missing
+            if not (url.startswith('http://') or url.startswith('https://')):
+                url = 'https://' + url
+            
+            # Create new bookmark
+            bookmark_id = str(len(config['links']) + 1)
+            new_bookmark = {
+                'id': bookmark_id,
+                'title': title,
+                'url': url,
+                'description': description,
+                'category': category,
+                'icon': icon
+            }
+            
+            # Add to config
+            config['links'].append(new_bookmark)
+            save_config(config)
+            
+            flash('Bookmark added successfully!', 'success')
+            return redirect(url_for('main.dashboard'))
+            
+        except Exception as e:
+            flash(f'Error adding bookmark: {str(e)}', 'error')
+    
+    return render_template('add_bookmark.html', categories=categories)

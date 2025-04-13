@@ -436,10 +436,26 @@
       color: white !important;
       border-color: #3b82f6;
     }
+
+    @keyframes pulse-dark {
+      0% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+      }
+    }
+    
+    .dark a[href="{{ url_for('main.add_bookmark') }}"] {
+      animation: pulse-dark 2s infinite ease-in-out;
+    }
   </style>
 </head>
-<body class="min-h-screen">
-  <nav class="mb-8">
+<body class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+  <nav class="bg-gradient-to-r from-blue-600 to-purple-600 py-2 sticky top-0 z-50 shadow-sm w-full">
     <div class="container mx-auto px-4 py-4">
       <div class="flex justify-between items-center">
         <!-- Left side with title -->
@@ -464,6 +480,12 @@
         <!-- Right side with buttons -->
         <div class="flex items-center space-x-6">
           {% if current_user.is_authenticated %}
+            <!-- Add Bookmark button -->
+            <a href="{{ url_for('main.add_bookmark') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+              <i class="fas fa-bookmark"></i>
+              <span>Add Bookmark</span>
+            </a>
+            
             <a href="{{ url_for('main.upload_config') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
               <i class="fas fa-upload"></i>
               <span>Config</span>
@@ -534,7 +556,7 @@
     </div>
   </nav>
 
-  <div class="container mx-auto px-4 pb-8">
+  <div class="container mx-auto px-4 pb-8 mt-8">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -547,6 +569,16 @@
     {% endwith %}
     {% block content %}{% endblock %}
   </div>
+
+  <!-- Floating Action Button for Add Bookmark -->
+  {% if current_user.is_authenticated %}
+  <a href="{{ url_for('main.add_bookmark') }}" 
+     class="fixed bottom-6 right-6 bg-blue-500 hover:bg-blue-600 text-white rounded-full w-18 h-18 flex items-center justify-center shadow-xl transition-all border-4 border-transparent dark:border-white dark:bg-blue-500 dark:hover:bg-blue-400 dark:shadow-blue-500/50"
+     style="width: 4.5rem; height: 4.5rem; animation: pulse-dark 2s infinite ease-in-out;"
+     title="Add Bookmark">
+    <i class="fas fa-plus text-3xl"></i>
+  </a>
+  {% endif %}
 
   <script>
     function toggleSettingsDropdown(event) {
