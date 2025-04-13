@@ -17,21 +17,38 @@
           </a>
         </p>
         <form action="{{ url_for('main.upload_bulk') }}" method="post" enctype="multipart/form-data" class="space-y-4">
-          <div class="flex items-center justify-center w-full">
-            <label class="flex flex-col w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
-              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+          <div class="flex flex-col space-y-4">
+            <!-- Styled file input container -->
+            <div class="relative border-2 border-gray-300 border-dashed rounded-lg p-6 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+              <div class="flex flex-col items-center justify-center mb-4">
                 <i class="fas fa-file-csv text-2xl text-gray-400 mb-2"></i>
                 <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                  <span class="font-semibold">Click to upload</span> or drag and drop
+                  <span class="font-semibold">Click to select</span> or drag and drop
                 </p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">CSV or Excel file</p>
               </div>
-              <input type="file" name="file" class="hidden" accept=".csv,.xlsx,.xls" required>
-            </label>
+              
+              <!-- File name display -->
+              <div id="csv-file-label" class="text-center text-sm text-gray-600 dark:text-gray-300 hidden relative z-20">
+                Selected: <span class="font-medium"></span>
+                <button type="button" class="ml-2 text-red-500 hover:text-red-700 relative z-30" 
+                        onclick="clearFileInput('csv-file-input', 'csv-file-label', event)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              
+              <!-- The actual file input -->
+              <input type="file" name="file" accept=".csv,.xlsx,.xls" required 
+                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                     id="csv-file-input"
+                     onchange="updateFileLabel(this, 'csv-file-label')">
+            </div>
+              
+            <!-- Styled submit button -->
+            <button type="submit" class="w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
+              <i class="fas fa-upload mr-2"></i> Import from Spreadsheet
+            </button>
           </div>
-          <button type="submit" class="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-            Import from Spreadsheet
-          </button>
         </form>
       </div>
 
@@ -42,17 +59,17 @@
         
         <div class="space-y-4">
           <!-- Chrome -->
-          <div class="border border-gray-200 dark:border-gray-600 rounded-lg">
-            <button class="w-full px-4 py-3 text-left focus:outline-none" onclick="toggleInstructions('chrome')">
+          <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+            <button type="button" class="w-full px-4 py-3 text-left focus:outline-none bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" onclick="toggleInstructions('chrome')">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                  <i class="fab fa-chrome text-xl"></i>
+                  <i class="fab fa-chrome text-xl text-blue-500"></i>
                   <span class="font-medium">Google Chrome</span>
                 </div>
                 <i class="fas fa-chevron-down transform transition-transform" id="chrome-chevron"></i>
               </div>
             </button>
-            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600" id="chrome-instructions">
+            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800" id="chrome-instructions">
               <ol class="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300">
                 <li>Open Chrome and click the three dots menu (⋮) in the top-right</li>
                 <li>Go to Bookmarks → Bookmark Manager</li>
@@ -64,17 +81,17 @@
           </div>
 
           <!-- Firefox -->
-          <div class="border border-gray-200 dark:border-gray-600 rounded-lg">
-            <button class="w-full px-4 py-3 text-left focus:outline-none" onclick="toggleInstructions('firefox')">
+          <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+            <button type="button" class="w-full px-4 py-3 text-left focus:outline-none bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" onclick="toggleInstructions('firefox')">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                  <i class="fab fa-firefox-browser text-xl"></i>
+                  <i class="fab fa-firefox-browser text-xl text-orange-500"></i>
                   <span class="font-medium">Firefox</span>
                 </div>
                 <i class="fas fa-chevron-down transform transition-transform" id="firefox-chevron"></i>
               </div>
             </button>
-            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600" id="firefox-instructions">
+            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800" id="firefox-instructions">
               <ol class="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300">
                 <li>Click the Library button (book icon) in the toolbar</li>
                 <li>Click "Bookmarks" and select "Manage Bookmarks"</li>
@@ -86,17 +103,17 @@
           </div>
 
           <!-- Brave -->
-          <div class="border border-gray-200 dark:border-gray-600 rounded-lg">
-            <button class="w-full px-4 py-3 text-left focus:outline-none" onclick="toggleInstructions('brave')">
+          <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+            <button type="button" class="w-full px-4 py-3 text-left focus:outline-none bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" onclick="toggleInstructions('brave')">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                  <i class="fas fa-shield-alt text-xl"></i>
+                  <i class="fas fa-shield-alt text-xl text-orange-600"></i>
                   <span class="font-medium">Brave</span>
                 </div>
                 <i class="fas fa-chevron-down transform transition-transform" id="brave-chevron"></i>
               </div>
             </button>
-            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600" id="brave-instructions">
+            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800" id="brave-instructions">
               <ol class="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300">
                 <li>Click the menu icon (three lines) in the top-right</li>
                 <li>Go to Bookmarks → Bookmark manager</li>
@@ -108,17 +125,17 @@
           </div>
 
           <!-- Safari -->
-          <div class="border border-gray-200 dark:border-gray-600 rounded-lg">
-            <button class="w-full px-4 py-3 text-left focus:outline-none" onclick="toggleInstructions('safari')">
+          <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+            <button type="button" class="w-full px-4 py-3 text-left focus:outline-none bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" onclick="toggleInstructions('safari')">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                  <i class="fab fa-safari text-xl"></i>
+                  <i class="fab fa-safari text-xl text-blue-400"></i>
                   <span class="font-medium">Safari</span>
                 </div>
                 <i class="fas fa-chevron-down transform transition-transform" id="safari-chevron"></i>
               </div>
             </button>
-            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600" id="safari-instructions">
+            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800" id="safari-instructions">
               <ol class="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300">
                 <li>Click File in the menu bar</li>
                 <li>Select "Export Bookmarks"</li>
@@ -129,17 +146,17 @@
           </div>
 
           <!-- Edge -->
-          <div class="border border-gray-200 dark:border-gray-600 rounded-lg">
-            <button class="w-full px-4 py-3 text-left focus:outline-none" onclick="toggleInstructions('edge')">
+          <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+            <button type="button" class="w-full px-4 py-3 text-left focus:outline-none bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" onclick="toggleInstructions('edge')">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                  <i class="fab fa-edge text-xl"></i>
+                  <i class="fab fa-edge text-xl text-blue-600"></i>
                   <span class="font-medium">Microsoft Edge</span>
                 </div>
                 <i class="fas fa-chevron-down transform transition-transform" id="edge-chevron"></i>
               </div>
             </button>
-            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600" id="edge-instructions">
+            <div class="hidden px-4 py-3 border-t border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800" id="edge-instructions">
               <ol class="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300">
                 <li>Click the three dots menu (...) in the top-right</li>
                 <li>Go to Favorites → Manage favorites</li>
@@ -153,21 +170,38 @@
 
         <!-- Upload Form for Browser Bookmarks -->
         <form action="{{ url_for('main.upload_bookmarks') }}" method="post" enctype="multipart/form-data" class="mt-6">
-          <div class="flex items-center justify-center w-full">
-            <label class="flex flex-col w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
-              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+          <div class="flex flex-col space-y-4">
+            <!-- Styled file input container -->
+            <div class="relative border-2 border-gray-300 border-dashed rounded-lg p-6 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+              <div class="flex flex-col items-center justify-center mb-4">
                 <i class="fas fa-bookmark text-2xl text-gray-400 mb-2"></i>
                 <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                  <span class="font-semibold">Click to upload</span> or drag and drop
+                  <span class="font-semibold">Click to select</span> or drag and drop
                 </p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">Bookmark HTML file</p>
               </div>
-              <input type="file" name="file" class="hidden" accept=".html,.htm" required>
-            </label>
+              
+              <!-- File name display -->
+              <div id="html-file-label" class="text-center text-sm text-gray-600 dark:text-gray-300 hidden relative z-20">
+                Selected: <span class="font-medium"></span>
+                <button type="button" class="ml-2 text-red-500 hover:text-red-700 relative z-30" 
+                        onclick="clearFileInput('html-file-input', 'html-file-label', event)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              
+              <!-- The actual file input -->
+              <input type="file" name="file" accept=".html,.htm" required 
+                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                     id="html-file-input"
+                     onchange="updateFileLabel(this, 'html-file-label')">
+            </div>
+              
+            <!-- Styled submit button -->
+            <button type="submit" class="w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
+              <i class="fas fa-upload mr-2"></i> Import
+            </button>
           </div>
-          <button type="submit" class="w-full mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-            Import
-          </button>
         </form>
       </div>
     </div>
@@ -175,23 +209,51 @@
 </div>
 
 <script>
+// Toggle function for browser instructions
 function toggleInstructions(browser) {
   const instructions = document.getElementById(`${browser}-instructions`);
   const chevron = document.getElementById(`${browser}-chevron`);
   
-  instructions.classList.toggle('hidden');
-  chevron.style.transform = instructions.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+  if (instructions) {
+    instructions.classList.toggle('hidden');
+    if (chevron) {
+      chevron.style.transform = instructions.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+  }
 }
 
-// File input preview
-document.querySelectorAll('input[type="file"]').forEach(input => {
-  input.addEventListener('change', function(e) {
-    const fileName = e.target.files[0]?.name;
-    if (fileName) {
-      const preview = this.closest('label').querySelector('p.text-sm');
-      preview.innerHTML = `Selected: ${fileName}`;
+// Update file label when file is selected
+function updateFileLabel(input, labelId) {
+  const label = document.getElementById(labelId);
+  if (input.files && input.files[0] && label) {
+    const nameSpan = label.querySelector('span');
+    if (nameSpan) {
+      nameSpan.textContent = input.files[0].name;
+      label.classList.remove('hidden');
     }
-  });
-});
+  }
+}
+
+// Clear file input
+function clearFileInput(inputId, labelId, event) {
+  // Stop the event from propagating to the parent elements
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  
+  const input = document.getElementById(inputId);
+  const label = document.getElementById(labelId);
+  
+  if (input && label) {
+    // Reset the file input value
+    input.value = '';
+    
+    // Hide the label
+    label.classList.add('hidden');
+  }
+  
+  return false;
+}
 </script>
 {% endblock %} 
