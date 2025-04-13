@@ -562,4 +562,4 @@ def handle_user_login(username, email, sub, access_token, id_token):
         # Should not happen if logic above is correct, but handle defensively
         logger.error("User object is None after attempting find/link/create.")
         flash("Login failed due to an internal error.")
-        return redirect(url_for('auth.login'))
+    return redirect(url_for('auth.login'))
