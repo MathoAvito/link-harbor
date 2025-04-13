@@ -35,7 +35,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max file size
 # Ensure the upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Database configuration
+# Use DATABASE_URL environment variable if set, otherwise store the SQLite DB in the instance folder
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') or \
     'sqlite:///' + os.path.join(app.instance_path, 'users.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
