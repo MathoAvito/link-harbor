@@ -5,11 +5,11 @@
   <div class="space-y-8">
     <!-- Unified Upload Section -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
-      <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Import Links</h2>
+      <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Import</h2>
       
-      <!-- Unified Upload Section -->
+      <!-- Bookmarks Import Section -->
       <div class="mb-6">
-        <h3 class="text-xl font-semibold mb-3 text-gray-700 dark:text-gray-200">Upload File</h3>
+        <h3 class="text-xl font-semibold mb-3 text-gray-700 dark:text-gray-200">Upload Links</h3>
         <p class="text-gray-600 dark:text-gray-300 mb-4">
           Import multiple links using a CSV/Excel file or browser bookmarks HTML file.
           <a href="{{ url_for('static', filename='templates/bulk_import_template.csv') }}" class="text-blue-500 hover:text-blue-600">
@@ -48,14 +48,103 @@
               
             <!-- Styled submit button -->
             <button type="button" onclick="handleFileUpload()" class="w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
-              <i class="fas fa-upload mr-2"></i> Import
+              <i class="fas fa-upload mr-2"></i> Import Links
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Configuration Import Section -->
+      <div class="mb-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <h3 class="text-xl font-semibold mb-3 text-gray-700 dark:text-gray-200">Import Configuration</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-4">
+          Import a JSON configuration file containing your dashboard settings and links.
+        </p>
+        
+        <!-- Template Download Section -->
+        <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-lg">
+          <div class="flex items-start space-x-3">
+            <i class="fas fa-info-circle text-gray-500 mt-1"></i>
+            <div class="flex-1">
+              <p class="text-sm text-gray-600 dark:text-gray-200 mb-3">
+                Not sure about the format? Download our template file to see the correct JSON structure for your configuration.
+              </p>
+              <a href="{{ url_for('main.download_config') }}" 
+                 class="inline-flex items-center space-x-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-lg transition-colors">
+                <i class="fas fa-download"></i>
+                <span>Download Template</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Example JSON Structure -->
+        <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-lg">
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+              Expected Structure:
+            </h4>
+            <button onclick="toggleJsonExample()" class="text-xs text-blue-500 hover:text-blue-600">
+              <span id="json-toggle-text">Show</span> <i id="json-toggle-icon" class="fas fa-chevron-down"></i>
+            </button>
+          </div>
+          <pre id="json-example" class="hidden text-xs bg-white dark:bg-gray-800 p-3 rounded-lg overflow-x-auto text-gray-600 dark:text-gray-300"><code>{
+  "links": [
+    {
+      "title": "GitHub",
+      "url": "https://github.com",
+      "description": "Code repository",
+      "category": "Development"
+    },
+    {
+      "title": "Gmail",
+      "url": "https://gmail.com",
+      "description": "Email service", 
+      "category": "Communication"
+    }
+  ]
+}</code></pre>
+        </div>
+        
+        <!-- Configuration Upload Form -->
+        <form method="POST" action="{{ url_for('main.upload_config') }}" enctype="multipart/form-data" class="space-y-6">
+          <div class="flex flex-col space-y-4">
+            <!-- Styled file input container -->
+            <div class="relative border-2 border-gray-300 border-dashed rounded-lg p-6 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+              <div class="flex flex-col items-center justify-center mb-4">
+                <i class="fas fa-cogs text-2xl text-gray-400 mb-2"></i>
+                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span class="font-semibold">Click to select</span> or drag and drop
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">JSON Configuration File</p>
+              </div>
+              
+              <!-- File name display -->
+              <div id="config-file-label" class="text-center text-sm text-gray-600 dark:text-gray-300 hidden relative z-20">
+                Selected: <span class="font-medium"></span>
+                <button type="button" class="ml-2 text-red-500 hover:text-red-700 relative z-30" 
+                        onclick="clearFileInput('config_file', 'config-file-label', event)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              
+              <!-- The actual file input -->
+              <input type="file" name="config_file" accept=".json" required 
+                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                     id="config_file"
+                     onchange="updateFileLabel(this, 'config-file-label')">
+            </div>
+              
+            <!-- Styled submit button -->
+            <button type="submit" class="w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
+              <i class="fas fa-upload mr-2"></i> Import Configuration
             </button>
           </div>
         </form>
       </div>
 
       <!-- Browser Bookmarks Import Instructions -->
-      <div>
+      <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
         <h3 class="text-xl font-semibold mb-3 text-gray-700 dark:text-gray-200">Browser Bookmark Export Instructions</h3>
         <p class="text-gray-600 dark:text-gray-300 mb-4">Choose your browser below for instructions:</p>
         
@@ -188,6 +277,23 @@ function toggleInstructions(browser) {
   }
 }
 
+// Toggle JSON example
+function toggleJsonExample() {
+  const example = document.getElementById('json-example');
+  const icon = document.getElementById('json-toggle-icon');
+  const text = document.getElementById('json-toggle-text');
+  
+  if (example) {
+    example.classList.toggle('hidden');
+    if (icon) {
+      icon.style.transform = example.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+    if (text) {
+      text.textContent = example.classList.contains('hidden') ? 'Show' : 'Hide';
+    }
+  }
+}
+
 // Update file label when file is selected
 function updateFileLabel(input, labelId) {
   const label = document.getElementById(labelId);
@@ -263,6 +369,46 @@ function handleFileUpload() {
   // Add to document, submit, and remove
   document.body.appendChild(form);
   form.submit();
+}
+
+// Drag and drop functionality for configuration upload
+const configDropZone = document.querySelector('form[action="{{ url_for("main.upload_config") }}"]');
+const configFileInput = document.getElementById('config_file');
+
+if (configDropZone && configFileInput) {
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    configDropZone.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    configDropZone.addEventListener(eventName, highlight, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    configDropZone.addEventListener(eventName, unhighlight, false);
+  });
+
+  function highlight(e) {
+    configDropZone.classList.add('border-gray-500');
+  }
+
+  function unhighlight(e) {
+    configDropZone.classList.remove('border-gray-500');
+  }
+
+  configDropZone.addEventListener('drop', handleConfigDrop, false);
+
+  function handleConfigDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    configFileInput.files = files;
+    updateFileLabel(configFileInput, 'config-file-label');
+  }
 }
 </script>
 {% endblock %} 
