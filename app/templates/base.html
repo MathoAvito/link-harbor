@@ -2,12 +2,92 @@
 <html lang="en" class="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, shrink-to-fit=no">
   <title>{{ config.title }}</title>
-  <!-- Google Font: Inter -->
+
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="{{ config.title }}">
+  <meta name="description" content="Personal link dashboard for organizing and managing bookmarks">
+  
+  <!-- Browser Compatibility and Mobile Meta Tags -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="{{ config.title }}">
+  <meta name="application-name" content="{{ config.title }}">
+  <meta name="msapplication-TileColor" content="#3b82f6">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="theme-color" content="#3b82f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1f2937" media="(prefers-color-scheme: dark)">
+  
+  <!-- Security Meta Tags -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  
+  <!-- Performance Meta Tags -->
+  <meta http-equiv="Accept-CH" content="DPR, Viewport-Width, Width">
+  <link rel="preload" as="font" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" crossorigin>
+  
+  <!-- Favicon and App Icons with Error Handling -->
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}" onerror="this.onerror=null; this.href='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🔗</text></svg>'">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}" onerror="this.onerror=null; this.href='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🔗</text></svg>'">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}" onerror="this.onerror=null; this.href='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🔗</text></svg>'">
+  <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}" crossorigin="use-credentials">
+  
+  <!-- Preload Icons and Critical Resources -->
+  <link rel="preload" as="image" href="{{ url_for('static', filename='img/favicon-32x32.png') }}" type="image/png">
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js">
+  
+  <!-- DNS Prefetch and Preconnect -->
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  
+  <!-- Stylesheets -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  
+  <!-- Sortable.js for drag and drop with async loading -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" async defer></script>
+
+  <!-- Icon Loading Error Handler Script -->
+  <script>
+    // Register service worker for PWA support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/static/service-worker.js').catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+
+    function handleIconError(element) {
+      // Fallback to emoji SVG if icon fails to load
+      element.onerror = null;
+      element.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔗</text></svg>';
+    }
+
+    // Add event listeners for icon error handling
+    document.addEventListener('DOMContentLoaded', function() {
+      const icons = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]');
+      icons.forEach(icon => {
+        icon.addEventListener('error', function() {
+          handleIconError(this);
+        });
+      });
+    });
+  </script>
+  
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -81,101 +161,130 @@
 
     /* Dark Mode Styles - Improved Colors */
     .dark body {
-      background-color: #1a1b1e;
+      background-color: #111827;  /* Darker, richer background */
       color: #f3f4f6;
     }
     
     .dark nav {
-      background: linear-gradient(135deg, #2e3441 0%, #293547 100%);
+      background: linear-gradient(135deg, #1f2937 0%, #374151 100%);  /* Richer gradient */
     }
     
     .dark .bg-white {
-      background-color: #2d3748;
-    }
-    
-    .dark .text-gray-700 {
-      color: #f3f4f6;
-    }
-    
-    .dark .text-gray-600 {
-      color: #e5e7eb;
-    }
-    
-    .dark .text-gray-500 {
-      color: #d1d5db;
-    }
-    
-    .dark .text-gray-400 {
-      color: #d1d5db !important;
-    }
-    
-    .dark .border-gray-100 {
-      border-color: #4b5563;
+      background-color: #1f2937;  /* Darker card background */
     }
     
     .dark .bg-gray-50 {
+      background-color: #262f3f;  /* Slightly lighter than card background */
+    }
+
+    .dark .bg-gray-100 {
       background-color: #374151;
     }
 
     .dark .bg-gray-700 {
-      background-color: #2d3748;
+      background-color: #1f2937;
+    }
+
+    .dark .bg-gray-800 {
+      background-color: #1a2234;  /* Slightly darker than card background */
+    }
+
+    .dark .text-gray-700 {
+      color: #e5e7eb;
+    }
+    
+    .dark .text-gray-600 {
+      color: #d1d5db;
+    }
+    
+    .dark .text-gray-500 {
+      color: #9ca3af;
+    }
+    
+    .dark .text-gray-400 {
+      color: #9ca3af !important;
+    }
+    
+    .dark .text-gray-300 {
+      color: #d1d5db !important;
+    }
+
+    .dark .border-gray-100 {
+      border-color: #374151;
+    }
+
+    .dark .border-gray-200 {
+      border-color: #2c3648;  /* Subtle border color */
+    }
+
+    .dark .border-gray-600 {
+      border-color: #4b5563;
+    }
+
+    .dark .border-gray-700 {
+      border-color: #374151;
     }
 
     .dark .hover\:bg-gray-50:hover {
-      background-color: #4b5563;
+      background-color: #2c3648;
     }
 
     .dark .hover\:bg-gray-100:hover {
-      background-color: #4b5563;
+      background-color: #374151;
+    }
+
+    .dark .hover\:bg-gray-700:hover {
+      background-color: #2c3648;
     }
     
     /* Improved dark mode form elements */
     .dark select, 
     .dark input, 
     .dark textarea {
-      background-color: #374151;
-      color: #f3f4f6;
-      border-color: #4b5563;
+      background-color: #262f3f;
+      color: #e5e7eb;
+      border-color: #374151;
     }
     
     .dark .flash-message {
       background-color: #1e3a8a;
       border-color: #3b82f6;
-      color: #f3f4f6;
+      color: #e5e7eb;
     }
 
     /* Dark mode scrollbar */
     .dark ::-webkit-scrollbar-track {
-      background: #2d3748;
+      background: #1f2937;
     }
 
     .dark ::-webkit-scrollbar-thumb {
-      background: #4b5563;
+      background: #374151;
     }
 
     .dark ::-webkit-scrollbar-thumb:hover {
-      background: #6b7280;
+      background: #4b5563;
     }
 
     /* Dark Mode Category and Text Improvements */
-    .dark h2.text-gray-800 {
-      color: #f3f4f6 !important;  /* Category titles */
+    .dark h2.text-gray-800,
+    .dark h2.text-gray-700 {
+      color: #e5e7eb !important;  /* Category titles */
     }
 
     .dark h3 {
-      color: #f3f4f6 !important;  /* Card titles */
+      color: #e5e7eb !important;  /* Card titles */
     }
 
-    .dark .text-gray-300 {
-      color: #e5e7eb !important;  /* Descriptions */
+    .dark p {
+      color: #9ca3af !important;  /* Description text */
     }
 
     .dark a {
-      color: #93c5fd !important;  /* Links */
+      color: #60a5fa !important;  /* Links */
     }
 
     .dark a:hover {
-      color: #bfdbfe !important;
+      color: #93c5fd !important;
     }
 
     /* Category Icons */
@@ -187,11 +296,145 @@
       color: #9ca3af !important;  /* Distinctive color for uncategorized icon */
     }
 
-    /* Primary Color Elements in Dark Mode */
-    .dark .text-blue-500,
-    .dark [class*="text-blue"],
-    .dark [class*="text-primary"] {
-      color: #60a5fa !important;
+    /* Card hover effects in dark mode */
+    .dark .group:hover {
+      background-color: #262f3f;
+      border-color: #3b82f6;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Dropdown menu in dark mode */
+    .dark .dropdown-menu {
+      background-color: #1f2937;
+      border-color: #374151;
+    }
+
+    /* Button hover states in dark mode */
+    .dark .hover\:text-gray-700:hover {
+      color: #e5e7eb !important;
+    }
+
+    /* Active/selected states in dark mode */
+    .dark .bg-gray-600 {
+      background-color: #3b82f6 !important;  /* Use blue instead of gray for active states */
+    }
+
+    .dark .hover\:bg-gray-700:hover {
+      background-color: #2563eb !important;  /* Darker blue on hover */
+    }
+
+    /* View Toggle Button Styles */
+    .view-toggle-button {
+      transition: all 0.3s ease;
+      font-weight: 500;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 2.75rem;
+      line-height: 1;
+    }
+
+    .view-toggle-button:first-child {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    .view-toggle-button:last-child {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .view-toggle-button.active {
+      background-color: #3b82f6;
+      color: white !important;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+    }
+
+    .view-toggle-button:not(.active) {
+      background-color: transparent;
+      color: #6b7280;
+    }
+
+    .view-toggle-button:hover:not(.active) {
+      background-color: rgba(203, 213, 225, 0.2);
+      color: #374151;
+    }
+
+    /* Dark mode specific styles for view toggle buttons */
+    .dark .view-toggle-button {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .dark .view-toggle-button.active {
+      background-color: #3b82f6;
+      color: white !important;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+
+    .dark .view-toggle-button:not(.active) {
+      color: #e5e7eb !important;
+      background-color: transparent;
+    }
+
+    .dark .view-toggle-button:hover:not(.active) {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: white !important;
+    }
+
+    /* Expand/Collapse button styles to match view buttons */
+    .expand-collapse-button {
+      transition: all 0.3s ease;
+      font-weight: 500;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 2.75rem;
+      line-height: 1;
+      background-color: #3b82f6;
+      color: white !important;
+      border: 1px solid #3b82f6;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+    }
+
+    .expand-collapse-button:hover {
+      background-color: #2563eb;
+      border-color: #2563eb;
+    }
+
+    .dark .expand-collapse-button {
+      background-color: #3b82f6;
+      color: white !important;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+
+    .dark .expand-collapse-button:hover {
+      background-color: #2563eb;
+      border-color: #2563eb;
+    }
+
+    /* Override any conflicting styles */
+    .dark .bg-gray-600,
+    .dark .hover\:bg-gray-700:hover {
+      background-color: transparent !important;
+    }
+
+    .dark .text-gray-400,
+    .dark .text-gray-300 {
+      color: #e5e7eb !important;
+    }
+
+    .dark .active-view {
+      background-color: #3b82f6 !important;
+      color: white !important;
+      border-color: #3b82f6;
     }
   </style>
 </head>
@@ -232,10 +475,10 @@
               <span>Config</span>
             </a>
             
-            <!-- Add the new Import Bookmarks button here -->
-            <a href="{{ url_for('main.upload_bookmarks') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
-              <i class="fas fa-bookmark"></i>
-              <span>Import Bookmarks</span>
+            <!-- Import button -->
+            <a href="{{ url_for('main.upload_page') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+              <i class="fas fa-file-import"></i>
+              <span>Import</span>
             </a>
             
             <!-- Settings Button -->
@@ -248,11 +491,13 @@
                 <form method="POST" action="{{ url_for('main.update_settings') }}" class="p-4">
                   <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">Dashboard Settings</h3>
                   <div class="space-y-4">
+                    <!-- Container Spacing -->
                     <div>
                       <label for="container_spacing" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Container Spacing
                       </label>
                       <select id="container_spacing" name="container_spacing" 
+                              onchange="updateContainerSpacing(this.value)"
                               class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="less" {% if config.theme.container_spacing == 'less' %}selected{% endif %}>Compact</option>
                         <option value="more" {% if config.theme.container_spacing == 'more' %}selected{% endif %}>Spacious</option>
@@ -274,19 +519,21 @@
                       </button>
                     </div>
 
-                    <button type="submit" 
-                            class="w-full bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 transition">
-                      Save Changes
-                    </button>
+                    <!-- Profile Settings Link -->
+                    <a href="{{ url_for('auth.profile') }}" 
+                       class="block w-full text-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                      Profile Settings
+                    </a>
+                    
+                    <!-- Logout Link -->
+                    <a href="{{ url_for('auth.logout') }}" 
+                       class="block w-full text-center bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-lg px-4 py-2 hover:bg-red-200 dark:hover:bg-red-800 transition mt-2">
+                      <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
                   </div>
                 </form>
               </div>
             </div>
-
-            <a href="{{ url_for('auth.logout') }}" class="nav-button text-white px-4 py-2 rounded-lg flex items-center space-x-2">
-              <i class="fas fa-sign-out-alt"></i>
-              <span>Logout</span>
-            </a>
           {% endif %}
         </div>
       </div>
@@ -322,6 +569,27 @@
         dropdown.classList.add('hidden');
       }
     });
+
+    // Update container spacing immediately
+    function updateContainerSpacing(value) {
+      // Submit form with AJAX
+      const formData = new FormData();
+      formData.append('container_spacing', value);
+      
+      fetch('{{ url_for('main.update_settings') }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          // Reload page to apply changes
+          window.location.reload();
+        }
+      });
+    }
 
     // Dark mode functionality
     function toggleDarkMode() {

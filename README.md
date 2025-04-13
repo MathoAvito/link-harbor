@@ -85,7 +85,11 @@ Link Harbor implements a robust user management system powered by AWS Cognito, p
 ### User Features
 - Personal bookmark spaces for each user
 - Secure data isolation between users
-- Profile management
+- Enhanced profile management
+  - Dedicated interfaces for username and password changes
+  - Intuitive password requirements visualization
+  - Real-time password validation
+  - Visibility toggles for sensitive fields
 - Password reset functionality
 - Email verification
 

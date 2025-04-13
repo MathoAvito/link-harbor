@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto p-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+    <div class="flex items-center mb-6">
+      <a href="{{ url_for('auth.profile') }}" class="mr-3 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </a>
+      <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Change Username</h2>
+    </div>
+    
+    <!-- Current info card -->
+    <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+      <p class="text-gray-600 dark:text-gray-400">Current Username: <span class="font-semibold">{{ current_user.username }}</span></p>
+    </div>
+
+    <!-- Form -->
+    <form id="usernameForm" class="space-y-4">
+      <div>
+        <label for="new_username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          New Username
+        </label>
+        <input type="text" 
+               id="new_username" 
+               name="new_username" 
+               required 
+               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+               placeholder="Enter new username">
+      </div>
+      <button type="button" 
+              onclick="showPasswordModal()"
+              class="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+        Update Username
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Password Verification Modal -->
+<div id="passwordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
+    <h3 class="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">Verify Password</h3>
+    <form id="passwordVerificationForm" action="{{ url_for('auth.update_username') }}" method="post" class="space-y-4">
+      <input type="hidden" id="modal_new_username" name="new_username">
+      <div>
+        <label for="current_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Enter your current password to confirm username change
+        </label>
+        <div class="relative">
+          <input type="password" 
+                 id="current_password" 
+                 name="current_password" 
+                 required 
+                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white pr-10"
+                 placeholder="Enter current password">
+          <button type="button" 
+                  class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  onclick="togglePasswordVisibility('current_password', 'modal_eye_icon')">
+            <svg id="modal_eye_icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="flex space-x-3">
+        <button type="button" 
+                onclick="hidePasswordModal()"
+                class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" 
+                class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+          Confirm
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Toggle password visibility
+function togglePasswordVisibility(inputId, iconId) {
+  const input = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
+  
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.innerHTML = `
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+    `;
+  } else {
+    input.type = 'password';
+    icon.innerHTML = `
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    `;
+  }
+}
+
+// Modal functions
+function showPasswordModal() {
+  const newUsername = document.getElementById('new_username').value;
+  if (!newUsername) {
+    alert('Please enter a new username');
+    return;
+  }
+  document.getElementById('modal_new_username').value = newUsername;
+  document.getElementById('passwordModal').classList.remove('hidden');
+}
+
+function hidePasswordModal() {
+  document.getElementById('passwordModal').classList.add('hidden');
+  document.getElementById('current_password').value = '';
+}
+
+// Close modal on outside click
+document.getElementById('passwordModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    hidePasswordModal();
+  }
+});
+</script>
+{% endblock %} 

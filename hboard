@@ -1,0 +1,52 @@
+[1mdiff --cc app/__init__.py[m
+[1mindex ed9a126,4698c8e..0000000[m
+[1m--- a/app/__init__.py[m
+[1m+++ b/app/__init__.py[m
+[36m@@@ -1,12 -1,11 +1,19 @@@[m
+  import os[m
+  import logging[m
+[32m++<<<<<<< HEAD[m
+[32m +from flask import Flask, send_from_directory, request[m
+[32m++=======[m
+[32m+ from flask import Flask[m
+[32m++>>>>>>> cba582d2a2227249c3c5701d3c8457b7e3c93326[m
+  from flask_sqlalchemy import SQLAlchemy[m
+  from flask_login import LoginManager[m
+  from dotenv import load_dotenv[m
+  from flask_awscognito import AWSCognitoAuthentication[m
+  from flask_migrate import Migrate[m
+[32m++<<<<<<< HEAD[m
+[32m +from datetime import timedelta[m
+[32m++=======[m
+[32m++>>>>>>> cba582d2a2227249c3c5701d3c8457b7e3c93326[m
+  [m
+  # Configure logging[m
+  logging.basicConfig([m
+[36m@@@ -35,20 -35,13 +42,27 @@@[m [mapp.config['MAX_CONTENT_LENGTH'] = 16 [m
+  # Ensure the upload folder exists[m
+  os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +# Database configuration[m
+[32m++=======[m
+[32m+ # Use DATABASE_URL environment variable if set, otherwise store the SQLite DB in the instance folder[m
+[32m++>>>>>>> cba582d2a2227249c3c5701d3c8457b7e3c93326[m
+  app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') or \[m
+      'sqlite:///' + os.path.join(app.instance_path, 'users.db')[m
+  app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False[m
+  [m
+  # Set AWS configuration[m
+  app.config['AWS_DEPLOYMENT'] = os.getenv('AWS_DEPLOYMENT', 'False').lower() == 'true'[m
+[32m++<<<<<<< HEAD[m
+[32m +app.config['AWS_DEFAULT_REGION'] = os.getenv('AWS_DEFAULT_REGION')[m
+[32m +app.config['AWS_COGNITO_DOMAIN'] = os.getenv('AWS_COGNITO_DOMAIN')[m
+[32m +app.config['AWS_COGNITO_USER_POOL_ID'] = os.getenv('AWS_COGNITO_USER_POOL_ID')[m
+[32m +app.config['AWS_COGNITO_USER_POOL_CLIENT_ID'] = os.getenv('AWS_COGNITO_USER_POOL_CLIENT_ID')[m
+[32m +app.config['AWS_COGNITO_USER_POOL_CLIENT_SECRET'] = os.getenv('AWS_COGNITO_USER_POOL_CLIENT_SECRET')[m
+[32m +app.config['AWS_COGNITO_REDIRECT_URL'] = os.getenv('AWS_COGNITO_REDIRECT_URL')[m
+[32m +app.config['AWS_COGNITO_LOGOUT_URL'] = os.getenv('AWS_COGNITO_LOGOUT_URL')[m
+[32m++=======[m
+[32m++>>>>>>> cba582d2a2227249c3c5701d3c8457b7e3c93326[m
+  [m
+  # Initialize SQLAlchemy[m
+  db = SQLAlchemy(app)[m
