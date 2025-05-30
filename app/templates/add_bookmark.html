@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-2xl mx-auto">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">Add New Bookmark</h2>
+    
+    <form method="POST" action="{{ url_for('main.add_bookmark') }}" class="space-y-5">
+      <!-- Title field -->
+      <div>
+        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Title <span class="text-red-500">*</span>
+        </label>
+        <input type="text" id="title" name="title" required 
+               class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 
+                      focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
+                      bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+               placeholder="My Bookmark">
+      </div>
+      
+      <!-- URL field -->
+      <div>
+        <label for="url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          URL <span class="text-red-500">*</span>
+        </label>
+        <input type="url" id="url" name="url" required
+               class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 
+                      focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                      bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+               placeholder="https://example.com">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">https:// will be added automatically if missing</p>
+      </div>
+      
+      <!-- Description field -->
+      <div>
+        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Description
+        </label>
+        <textarea id="description" name="description" rows="3"
+                  class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 
+                         focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  placeholder="Optional description"></textarea>
+      </div>
+      
+      <!-- Category field -->
+      <div>
+        <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Category
+        </label>
+        <div class="relative">
+          <select id="category" name="category"
+                  class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 
+                         focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none">
+            <option value="">-- Uncategorized --</option>
+            {% for category in categories %}
+              <option value="{{ category }}">{{ category }}</option>
+            {% endfor %}
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+            <i class="fas fa-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Icon field -->
+      <div>
+        <label for="icon" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Icon
+        </label>
+        <div class="flex space-x-3">
+          <input type="text" id="icon" name="icon"
+                 class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 
+                        focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                 placeholder="link">
+          <div class="bg-gray-100 dark:bg-gray-600 rounded-lg px-3 py-2 flex items-center justify-center min-w-[42px]">
+            <i id="icon-preview" class="fas fa-link"></i>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          Enter a <a href="https://fontawesome.com/icons?d=gallery&s=solid&m=free" target="_blank" class="text-blue-500 hover:underline">Font Awesome</a> icon name (without fa-)
+        </p>
+      </div>
+      
+      <!-- Submit buttons -->
+      <div class="flex space-x-3 pt-4">
+        <button type="submit" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+          <i class="fas fa-save mr-2"></i> Save Bookmark
+        </button>
+        <a href="{{ url_for('main.dashboard') }}" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Icon preview functionality
+  document.getElementById('icon').addEventListener('input', function() {
+    const iconValue = this.value.trim();
+    const preview = document.getElementById('icon-preview');
+    
+    // Update the icon preview
+    if (iconValue) {
+      preview.className = 'fas fa-' + iconValue;
+    } else {
+      preview.className = 'fas fa-link'; // Default icon
+    }
+  });
+</script>
+
+{% endblock %} 
